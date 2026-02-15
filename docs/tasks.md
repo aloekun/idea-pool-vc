@@ -13,7 +13,7 @@
 
 ### 担当者: 初期設定担当者
 
-- [ ] 1.1 プロジェクト初期化とディレクトリ構造作成
+- [x] 1.1 プロジェクト初期化とディレクトリ構造作成
   - pnpmでTypeScript/Node.jsプロジェクトの初期化
   - ディレクトリ構造の作成（domain, application, infrastructure, presentation）
   - 依存関係のインストール:
@@ -24,47 +24,47 @@
     - dotenv (環境変数)
   - tsconfig.json, tsup.config.ts の設定
 
-- [ ] 1.2 テスト環境のセットアップ
+- [x] 1.2 テスト環境のセットアップ
   - Vitest + fast-check のセットアップ
   - vitest.config.ts の設定
   - テスト用データベースの設定（インメモリSQLite）
 
-- [ ] 1.3 ドメイン層の基礎実装
-  - [ ] 1.3.1 値オブジェクトの実装（IdeaId, ChunkId, AnalysisId, TagCategory）
-  - [ ] 1.3.2 ドメインエラーの実装（DomainError, ValidationError, NotFoundError, LLMServiceError, DatabaseError）
-  - [ ] 1.3.3 Result型の実装（Result<T, E>, Success<T>, Failure<E>）
-  - [ ] 1.3.4 エンティティの実装（Tag, Chunk, Suggestion, Analysis, Idea）
+- [x] 1.3 ドメイン層の基礎実装
+  - [x] 1.3.1 値オブジェクトの実装（IdeaId, ChunkId, AnalysisId, TagCategory）
+  - [x] 1.3.2 ドメインエラーの実装（DomainError, ValidationError, NotFoundError, LLMServiceError, DatabaseError）
+  - [x] 1.3.3 Result型の実装（Result<T, E>, Success<T>, Failure<E>）
+  - [x] 1.3.4 エンティティの実装（Tag, Chunk, Suggestion, Analysis, Idea）
     - Ideaエンティティに archivedAt フィールドを追加
     - archive(), restore(), isArchived() メソッドを実装
-  - [ ] 1.3.5 リポジトリインターフェースの定義（IIdeaRepository）
-  - [ ] 1.3.6 LLMサービスインターフェースの定義（ILLMService）
-  - [ ] 1.3.7 ドメイン層のユニットテスト
+  - [x] 1.3.5 リポジトリインターフェースの定義（IIdeaRepository）
+  - [x] 1.3.6 LLMサービスインターフェースの定義（ILLMService）
+  - [x] 1.3.7 ドメイン層のユニットテスト
 
-- [ ] 1.4 インフラストラクチャ層の実装
-  - [ ] 1.4.1 データベーススキーマの作成
+- [x] 1.4 インフラストラクチャ層の実装
+  - [x] 1.4.1 データベーススキーマの作成
     - ideas テーブル（archived_at カラム追加）
     - chunks, tags, analyses, analysis_tags テーブル
-  - [ ] 1.4.2 SQLiteIdeaRepositoryの実装
+  - [x] 1.4.2 SQLiteIdeaRepositoryの実装
     - save, findById, findAll, update メソッド
     - findAllActive, findAllArchived メソッド（フィルタ対応）
     - findByTag メソッド（タグフィルタ）
-  - [ ] 1.4.3 OllamaLLMServiceの実装
+  - [x] 1.4.3 OllamaLLMServiceの実装
     - generateTags, generateSuggestion メソッド
     - checkConnection メソッド（接続確認）
     - JSONレスポンスのパース処理
-  - [ ] 1.4.4 設定ファイル読み込み機能の実装
+  - [x] 1.4.4 設定ファイル読み込み機能の実装
     - config.json の読み込み
     - 環境変数による上書き
-  - [ ] 1.4.5 インフラ層の統合テスト
+  - [x] 1.4.5 インフラ層の統合テスト
 
-- [ ] 1.5 API層の共通型定義
-  - [ ] 1.5.1 APIResponse<T>型とAPIError型の定義
-  - [ ] 1.5.2 DTOの実装（IdeaSummary, IdeaDetail, ChunkDetail, TagDetail, AnalysisDetail, SuggestionDTO）
+- [x] 1.5 API層の共通型定義
+  - [x] 1.5.1 APIResponse<T>型とAPIError型の定義
+  - [x] 1.5.2 DTOの実装（IdeaSummary, IdeaDetail, ChunkDetail, TagDetail, AnalysisDetail, SuggestionDTO）
 
-- [ ] 1.6 テスト用モック実装
-  - [ ] 1.6.1 MockIdeaRepositoryの実装（インメモリ）
-  - [ ] 1.6.2 MockLLMServiceの実装（固定レスポンス）
-  - [ ] 1.6.3 モック実装のユニットテスト
+- [x] 1.6 テスト用モック実装
+  - [x] 1.6.1 MockIdeaRepositoryの実装（インメモリ）
+  - [x] 1.6.2 MockLLMServiceの実装（固定レスポンス）
+  - [x] 1.6.3 モック実装のユニットテスト
 
 **フェーズ1完了の定義**: ドメイン層、インフラ層、API共通型、モック実装が完成し、他の開発者が並列作業を開始できる状態
 

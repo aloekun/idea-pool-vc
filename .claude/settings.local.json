@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(cargo build:*)",
-      "Bash(npm run build:hooks-rs:*)"
+      "Bash(npm run build:hooks-rs:*)",
+      "mcp__acp__Bash",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm rebuild:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(pnpm run lint)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm run test:coverage:*)",
+      "Bash(jj status:*)",
+      "Bash(jj new:*)"
     ]
   },
   "hooks": {
