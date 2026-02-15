@@ -2,6 +2,38 @@
 
 ## Project Overview
 
+**idea-pool-vc** は、ソフトウェアアイデアを永続的に蓄積し、LLM（Ollama/llama3.2）による自動タグ付け・分類・評価を行うCLIツールです。
+
+### 技術スタック
+
+| カテゴリ | 選択 |
+|---------|------|
+| 言語 | TypeScript (Node.js) |
+| パッケージマネージャー | pnpm |
+| ビルド | tsup |
+| テスト | Vitest + fast-check |
+| データベース | SQLite (better-sqlite3) |
+| CLIパーサー | Commander.js |
+| LLM | Ollama (llama3.2) |
+| ID生成 | ULID |
+
+### 主要コマンド
+
+```bash
+pnpm run idea add <text>        # アイデア登録
+pnpm run idea list              # 一覧表示（デフォルト10件）
+pnpm run idea show <id>         # 詳細表示
+pnpm run idea analyze <id>      # LLMでタグ生成
+pnpm run idea suggest <id>      # LLMで行動指針を提案
+pnpm run idea archive <id>      # アーカイブ
+```
+
+### 詳細ドキュメント
+
+- [要件定義書](docs/requirements.md)
+- [設計書](docs/design.md)
+- [タスクリスト](docs/tasks.md)
+
 
 ## Critical Rules
 

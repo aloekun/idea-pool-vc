@@ -14,35 +14,59 @@
 ### 担当者: 初期設定担当者
 
 - [ ] 1.1 プロジェクト初期化とディレクトリ構造作成
-  - TypeScript/Node.jsプロジェクトの初期化
+  - pnpmでTypeScript/Node.jsプロジェクトの初期化
   - ディレクトリ構造の作成（domain, application, infrastructure, presentation）
-  - 必要な依存関係のインストール（TypeScript, SQLite, テストライブラリ）
+  - 依存関係のインストール:
+    - TypeScript, tsup (ビルド)
+    - better-sqlite3 (データベース)
+    - commander (CLIパーサー)
+    - ulid (ID生成)
+    - dotenv (環境変数)
+  - tsconfig.json, tsup.config.ts の設定
 
 - [ ] 1.2 テスト環境のセットアップ
-  - プロパティベーステストライブラリ（fast-check）のセットアップ
-  - ユニットテストフレームワークのセットアップ
-  - テスト用データベースの設定
+  - Vitest + fast-check のセットアップ
+  - vitest.config.ts の設定
+  - テスト用データベースの設定（インメモリSQLite）
 
 - [ ] 1.3 ドメイン層の基礎実装
   - [ ] 1.3.1 値オブジェクトの実装（IdeaId, ChunkId, AnalysisId, TagCategory）
   - [ ] 1.3.2 ドメインエラーの実装（DomainError, ValidationError, NotFoundError, LLMServiceError, DatabaseError）
   - [ ] 1.3.3 Result型の実装（Result<T, E>, Success<T>, Failure<E>）
   - [ ] 1.3.4 エンティティの実装（Tag, Chunk, Suggestion, Analysis, Idea）
+    - Ideaエンティティに archivedAt フィールドを追加
+    - archive(), restore(), isArchived() メソッドを実装
   - [ ] 1.3.5 リポジトリインターフェースの定義（IIdeaRepository）
   - [ ] 1.3.6 LLMサービスインターフェースの定義（ILLMService）
   - [ ] 1.3.7 ドメイン層のユニットテスト
 
 - [ ] 1.4 インフラストラクチャ層の実装
-  - [ ] 1.4.1 データベーススキーマの作成（ideas, chunks, tags, analyses, analysis_tagsテーブル）
-  - [ ] 1.4.2 SQLiteIdeaRepositoryの実装（save, findById, findAll, updateメソッド）
-  - [ ] 1.4.3 OpenAILLMServiceの実装（generateTags, generateSuggestionメソッド）
-  - [ ] 1.4.4 インフラ層の統合テスト
+  - [ ] 1.4.1 データベーススキーマの作成
+    - ideas テーブル（archived_at カラム追加）
+    - chunks, tags, analyses, analysis_tags テーブル
+  - [ ] 1.4.2 SQLiteIdeaRepositoryの実装
+    - save, findById, findAll, update メソッド
+    - findAllActive, findAllArchived メソッド（フィルタ対応）
+    - findByTag メソッド（タグフィルタ）
+  - [ ] 1.4.3 OllamaLLMServiceの実装
+    - generateTags, generateSuggestion メソッド
+    - checkConnection メソッド（接続確認）
+    - JSONレスポンスのパース処理
+  - [ ] 1.4.4 設定ファイル読み込み機能の実装
+    - config.json の読み込み
+    - 環境変数による上書き
+  - [ ] 1.4.5 インフラ層の統合テスト
 
 - [ ] 1.5 API層の共通型定義
   - [ ] 1.5.1 APIResponse<T>型とAPIError型の定義
   - [ ] 1.5.2 DTOの実装（IdeaSummary, IdeaDetail, ChunkDetail, TagDetail, AnalysisDetail, SuggestionDTO）
 
-**フェーズ1完了の定義**: ドメイン層、インフラ層、API共通型が完成し、他の開発者が並列作業を開始できる状態
+- [ ] 1.6 テスト用モック実装
+  - [ ] 1.6.1 MockIdeaRepositoryの実装（インメモリ）
+  - [ ] 1.6.2 MockLLMServiceの実装（固定レスポンス）
+  - [ ] 1.6.3 モック実装のユニットテスト
+
+**フェーズ1完了の定義**: ドメイン層、インフラ層、API共通型、モック実装が完成し、他の開発者が並列作業を開始できる状態
 
 ---
 
@@ -55,20 +79,25 @@
   - AppendChunkRequestクラス（バリデーション付き）
   - AddTagRequestクラス（バリデーション付き）
   - RemoveTagRequestクラス（バリデーション付き）
+  - ArchiveIdeaRequestクラス（バリデーション付き）
+  - RestoreIdeaRequestクラス（バリデーション付き）
   - Requestオブジェクトのユニットテスト
 
 - [ ] 2A.2 Responseオブジェクトの定義
   - AddIdeaResponse, AppendChunkResponse, AddTagResponse, RemoveTagResponseの定義
+  - ArchiveIdeaResponse, RestoreIdeaResponseの定義
 
 - [ ] 2A.3 コマンド系ユースケースの実装
   - AddIdeaUseCaseの実装（Result型を返す）
   - AppendChunkUseCaseの実装（Result型を返す）
   - AddTagUseCaseの実装（Result型を返す）
   - RemoveTagUseCaseの実装（Result型を返す）
+  - ArchiveIdeaUseCaseの実装（Result型を返す）
+  - RestoreIdeaUseCaseの実装（Result型を返す）
   - ユースケースのユニットテスト（モックリポジトリを使用）
 
 - [ ] 2A.4 IdeaCommandAPIの実装
-  - IdeaCommandAPIクラスの実装（addIdea, appendChunk, addTag, removeTagメソッド）
+  - IdeaCommandAPIクラスの実装（addIdea, appendChunk, addTag, removeTag, archiveIdea, restoreIdeaメソッド）
   - Result型からAPIResponseへの変換ロジック実装
   - IdeaCommandAPIのユニットテスト（モックユースケースを使用）
 
@@ -77,6 +106,8 @@
   - handleAppendCommandの実装
   - handleAddTagCommandの実装
   - handleRemoveTagCommandの実装
+  - handleArchiveCommandの実装
+  - handleRestoreCommandの実装
   - コマンドハンドラーのユニットテスト（モックAPIを使用）
 
 - [ ] 2A.6 プロパティベーステスト（コマンド系）
@@ -91,6 +122,9 @@
 
 - [ ] 2B.1 バリデーション付きRequestオブジェクトの実装
   - ListIdeasRequestクラスの実装
+    - limit オプション（デフォルト10）
+    - tag フィルタオプション（複数指定可能）
+    - archived フィルタオプション（--archived, --all）
   - ShowIdeaRequestクラス（バリデーション付き）
   - Requestオブジェクトのユニットテスト
 
@@ -99,6 +133,9 @@
 
 - [ ] 2B.3 クエリ系ユースケースの実装
   - ListIdeasUseCaseの実装（Result型を返す）
+    - リミット対応
+    - タグフィルタ対応
+    - アーカイブフィルタ対応
   - ShowIdeaUseCaseの実装（Result型を返す）
   - ユースケースのユニットテスト（モックリポジトリを使用）
 
@@ -109,6 +146,9 @@
 
 - [ ] 2B.5 CLIコマンドハンドラーの実装（クエリ系）
   - handleListCommandの実装
+    - --limit オプション
+    - --tag オプション（複数指定可能）
+    - --archived, --all オプション
   - handleShowCommandの実装
   - コマンドハンドラーのユニットテスト（モックAPIを使用）
 
@@ -158,24 +198,21 @@
 
 - [ ] 2D.1 CLIコントローラーの実装
   - CLIControllerクラスの実装（3つのAPIファサードを注入）
-  - コマンド解析ロジックの実装
+  - Commander.jsによるコマンド解析ロジックの実装
+  - サブコマンド構造の定義（tag add, tag remove）
 
 - [ ] 2D.2 CLIエントリーポイントの実装
   - main関数の実装
   - コマンドライン引数の解析
   - ヘルプメッセージの実装
+  - .idea-poolディレクトリの初期化処理
 
 - [ ] 2D.3 DIコンテナの実装
   - DIContainerクラスの実装
   - リポジトリ、LLMサービス、ユースケース、APIファサード、CLIコントローラーの生成メソッド実装
   - DIコンテナのユニットテスト
 
-- [ ] 2D.4 設定ファイルの実装
-  - 設定ファイル（config.json）の定義
-  - 設定読み込みロジックの実装
-  - 環境変数からの設定読み込み対応
-
-- [ ] 2D.5 プロパティベーステスト（共通）
+- [ ] 2D.4 プロパティベーステスト（共通）
   - プロパティ3: エンティティ作成時のタイムスタンプ記録
   - プロパティ21: 不正コマンドのエラーハンドリング
 
@@ -196,30 +233,34 @@
   - `idea add` → `idea analyze` → `idea suggest` (analysisId指定) の再現性テスト
 
 - [ ] 3.3 E2Eテスト: タグ管理フロー
-  - `idea add` → `idea addTag` → `idea show` → `idea removeTag` のタグ管理フロー
+  - `idea add` → `idea tag add` → `idea show` → `idea tag remove` のタグ管理フロー
 
-- [ ] 3.4 統合テストの実行と問題修正
+- [ ] 3.4 E2Eテスト: アーカイブフロー
+  - `idea add` → `idea archive` → `idea list` (非表示確認) → `idea list --archived` (表示確認)
+  - `idea restore` → `idea list` (復元確認)
+
+- [ ] 3.5 統合テストの実行と問題修正
   - 全機能の統合動作確認
   - 発見された問題の修正
 
 ### ドキュメントとビルド
 
-- [ ] 3.5 READMEの作成
+- [ ] 3.6 READMEの作成
   - インストール手順
   - 使用方法
   - コマンド一覧
   - 設定方法
 
-- [ ] 3.6 ビルドスクリプトの作成
+- [ ] 3.7 ビルドスクリプトの作成
   - TypeScriptのビルド設定
   - 実行可能ファイルの生成
   - パッケージング
 
-- [ ] 3.7 CI/CDの設定
+- [ ] 3.8 CI/CDの設定
   - テスト自動実行の設定
   - ビルド自動化の設定
 
-**フェーズ3完了の定義**: 全機能が統合され、E2Eテストが通過し、ドキュメントが完成している状態
+**フェーズ3完了の定義**: 全機能が統合され、E2Eテスト（基本・分析・タグ・アーカイブ）が通過し、ドキュメントが完成している状態
 
 ---
 
@@ -227,16 +268,16 @@
 
 ```
 フェーズ1（初期設定担当者）
-  1.1 → 1.2 → 1.3 → 1.4 → 1.5
-  
+  1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6
+
 フェーズ2（並列開発）※フェーズ1完了後に開始
   ┌─ 2A.1 → 2A.2 → 2A.3 → 2A.4 → 2A.5 → 2A.6 （担当者A）
   ├─ 2B.1 → 2B.2 → 2B.3 → 2B.4 → 2B.5 → 2B.6 （担当者B）
   ├─ 2C.1 → 2C.2 → 2C.3 → 2C.4 → 2C.5 → 2C.6 （担当者C）
-  └─ 2D.1 → 2D.2 → 2D.3 → 2D.4 → 2D.5         （担当者D）
-  
+  └─ 2D.1 → 2D.2 → 2D.3 → 2D.4             （担当者D）
+
 フェーズ3（統合・品質保証）※フェーズ2完了後に開始
-  3.1, 3.2, 3.3 → 3.4 → 3.5, 3.6, 3.7
+  3.1, 3.2, 3.3, 3.4 → 3.5 → 3.6, 3.7, 3.8
 ```
 
 ---
