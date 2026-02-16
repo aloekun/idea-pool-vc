@@ -2,6 +2,38 @@
 
 ## Project Overview
 
+**idea-pool-vc** は、ソフトウェアアイデアを永続的に蓄積し、LLM（Ollama/llama3.2）による自動タグ付け・分類・評価を行うCLIツールです。
+
+### 技術スタック
+
+| カテゴリ | 選択 |
+|---------|------|
+| 言語 | TypeScript (Node.js) |
+| パッケージマネージャー | pnpm |
+| ビルド | tsup |
+| テスト | Vitest + fast-check |
+| データベース | SQLite (better-sqlite3) |
+| CLIパーサー | Commander.js |
+| LLM | Ollama (llama3.2) |
+| ID生成 | ULID |
+
+### 主要コマンド
+
+```bash
+pnpm run idea add <text>        # アイデア登録
+pnpm run idea list              # 一覧表示（デフォルト10件）
+pnpm run idea show <id>         # 詳細表示
+pnpm run idea analyze <id>      # LLMでタグ生成
+pnpm run idea suggest <id>      # LLMで行動指針を提案
+pnpm run idea archive <id>      # アーカイブ
+```
+
+### 詳細ドキュメント
+
+- [要件定義書](docs/requirements.md)
+- [設計書](docs/design.md)
+- [タスクリスト](docs/tasks.md)
+
 
 ## Critical Rules
 
@@ -42,16 +74,27 @@
 - Parameterized queries only
 - CSRF protection enabled
 
-## File Structure(Example)
-これはサンプルです。今後実装を進めながら、フォルダ階層を調整し、情報を更新してください。
+## File Structure
 
 ```
 src/
-|-- app/              # Next.js app router
-|-- components/       # Reusable UI components
-|-- hooks/            # Custom React hooks
-|-- lib/              # Utility libraries
-|-- types/            # TypeScript definitions
+|-- domain/           # Domain layer (entities, value objects, interfaces)
+|   |-- entities/     # Idea, Chunk, Tag, Analysis, Suggestion
+|   |-- value-objects/ # IdeaId, ChunkId, AnalysisId, TagCategory
+|   |-- interfaces/   # IIdeaRepository, ILLMService
+|   |-- errors/       # DomainError, ValidationError, etc.
+|-- application/      # Application layer (use cases, DTOs)
+|   |-- dto/          # API response types, IdeaDTO
+|-- infrastructure/   # Infrastructure layer
+|   |-- database/     # SQLite repository, schema, connection
+|   |-- llm/          # Ollama LLM service
+|   |-- config/       # App configuration
+|   |-- testing/      # Mock implementations
+|-- shared/           # Shared utilities (Result type)
+docs/
+|-- design.md         # Architecture and design document
+|-- requirements.md   # Requirements specification
+|-- tasks.md          # Task list
 ```
 
 ## Key Patterns
@@ -81,12 +124,16 @@ try {
 ## Environment Variables
 
 ```bash
-# Required
-DATABASE_URL=
-API_KEY=
+# LLM settings
+IDEA_POOL_LLM_PROVIDER=ollama
+IDEA_POOL_LLM_BASE_URL=http://localhost:11434
+IDEA_POOL_LLM_MODEL=llama3.2
 
-# Optional
-DEBUG=false
+# Database
+IDEA_POOL_DB_PATH=.idea-pool/ideas.db
+
+# List display
+IDEA_POOL_LIST_DEFAULT_LIMIT=10
 ```
 
 ## Available Commands

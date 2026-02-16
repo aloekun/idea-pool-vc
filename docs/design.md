@@ -15,7 +15,7 @@
 
 ### 層の構成
 
-```
+```text
 ┌─────────────────────────────────────┐
 │   プレゼンテーション層 (CLI/Web)    │
 ├─────────────────────────────────────┤
@@ -39,23 +39,27 @@
 #### エンティティ
 
 **Idea (アイデア)**
-```
+```text
 class Idea:
   - id: IdeaId
   - content: string
   - createdAt: DateTime
+  - archivedAt: DateTime | null
   - chunks: List<Chunk>
   - tags: List<Tag>
   - analyses: List<Analysis>
-  
+
   + addChunk(content: string): Chunk
   + addTag(tag: Tag): void
   + removeTag(tag: Tag): void
   + addAnalysis(analysis: Analysis): void
+  + archive(): void
+  + restore(): void
+  + isArchived(): boolean
 ```
 
 **Chunk (追記チャンク)**
-```
+```text
 class Chunk:
   - id: ChunkId
   - content: string
@@ -63,14 +67,14 @@ class Chunk:
 ```
 
 **Tag (タグ)**
-```
+```text
 class Tag:
   - name: string
   - category: TagCategory
 ```
 
 **Analysis (分析結果)**
-```
+```text
 class Analysis:
   - id: AnalysisId
   - generatedTags: List<Tag>
@@ -79,7 +83,7 @@ class Analysis:
 ```
 
 **Suggestion (行動指針)**
-```
+```text
 class Suggestion:
   - content: string
   - reasoning: string
@@ -88,31 +92,31 @@ class Suggestion:
 #### 値オブジェクト
 
 **IdeaId**
-```
+```text
 class IdeaId:
   - value: string
-  
+
   + equals(other: IdeaId): boolean
 ```
 
 **ChunkId**
-```
+```text
 class ChunkId:
   - value: string
-  
+
   + equals(other: ChunkId): boolean
 ```
 
 **AnalysisId**
-```
+```text
 class AnalysisId:
   - value: string
-  
+
   + equals(other: AnalysisId): boolean
 ```
 
 **TagCategory (列挙型)**
-```
+```text
 enum TagCategory:
   - NATURE (性質)
   - SCALE (規模感)
@@ -125,18 +129,21 @@ enum TagCategory:
 #### リポジトリインターフェース
 
 **IIdeaRepository**
-```
+```text
 interface IIdeaRepository:
   + save(idea: Idea): void
   + findById(id: IdeaId): Idea | null
   + findAll(): List<Idea>
+  + findAllActive(): List<Idea>
+  + findAllArchived(): List<Idea>
+  + findByTags(tags: List<string>): List<Idea>
   + update(idea: Idea): void
 ```
 
 #### LLMサービスインターフェース
 
 **ILLMService**
-```
+```text
 interface ILLMService:
   + generateTags(ideaContent: string, chunks: List<Chunk>): List<Tag>
   + generateSuggestion(ideaContent: string, chunks: List<Chunk>, tags: List<Tag>): Suggestion
@@ -149,12 +156,12 @@ interface ILLMService:
 #### ユースケース
 
 **AddIdeaUseCase**
-```
+```text
 class AddIdeaUseCase:
   - repository: IIdeaRepository
-  
+
   constructor(repository: IIdeaRepository)
-  
+
   + execute(content: string): IdeaId
     - 新しいIdeaを作成
     - repositoryに保存
@@ -162,12 +169,12 @@ class AddIdeaUseCase:
 ```
 
 **AppendChunkUseCase**
-```
+```text
 class AppendChunkUseCase:
   - repository: IIdeaRepository
-  
+
   constructor(repository: IIdeaRepository)
-  
+
   + execute(ideaId: IdeaId, content: string): void
     - ideaIdでIdeaを取得
     - Chunkを追加
@@ -175,38 +182,45 @@ class AppendChunkUseCase:
 ```
 
 **ListIdeasUseCase**
-```
+```text
 class ListIdeasUseCase:
   - repository: IIdeaRepository
-  
+
   constructor(repository: IIdeaRepository)
-  
-  + execute(): List<IdeaSummary>
-    - すべてのIdeaを取得
+
+  + execute(options: ListIdeasOptions): List<IdeaSummary>
+    - optionsに基づいてIdeaを取得
     - IdeaSummaryのリストに変換
     - 登録日時の降順でソート
+    - limitで件数制限
+
+class ListIdeasOptions:
+  - limit: number (default: 10)
+  - tags: List<string> (default: [])
+  - includeArchived: boolean (default: false)
+  - archivedOnly: boolean (default: false)
 ```
 
 **ShowIdeaUseCase**
-```
+```text
 class ShowIdeaUseCase:
   - repository: IIdeaRepository
-  
+
   constructor(repository: IIdeaRepository)
-  
+
   + execute(ideaId: IdeaId): IdeaDetail
     - ideaIdでIdeaを取得
     - IdeaDetailに変換
 ```
 
 **AnalyzeIdeaUseCase**
-```
+```text
 class AnalyzeIdeaUseCase:
   - repository: IIdeaRepository
   - llmService: ILLMService
-  
+
   constructor(repository: IIdeaRepository, llmService: ILLMService)
-  
+
   + execute(ideaId: IdeaId): Analysis
     - ideaIdでIdeaを取得
     - llmServiceでタグを生成
@@ -216,13 +230,13 @@ class AnalyzeIdeaUseCase:
 ```
 
 **SuggestActionUseCase**
-```
+```text
 class SuggestActionUseCase:
   - repository: IIdeaRepository
   - llmService: ILLMService
-  
+
   constructor(repository: IIdeaRepository, llmService: ILLMService)
-  
+
   + execute(ideaId: IdeaId): Suggestion
     - ideaIdでIdeaを取得
     - llmServiceで提案を生成
@@ -232,12 +246,12 @@ class SuggestActionUseCase:
 ```
 
 **AddTagUseCase**
-```
+```text
 class AddTagUseCase:
   - repository: IIdeaRepository
-  
+
   constructor(repository: IIdeaRepository)
-  
+
   + execute(ideaId: IdeaId, tag: Tag): void
     - ideaIdでIdeaを取得
     - タグを追加
@@ -245,31 +259,60 @@ class AddTagUseCase:
 ```
 
 **RemoveTagUseCase**
-```
+```text
 class RemoveTagUseCase:
   - repository: IIdeaRepository
-  
+
   constructor(repository: IIdeaRepository)
-  
+
   + execute(ideaId: IdeaId, tag: Tag): void
     - ideaIdでIdeaを取得
     - タグを削除
     - repositoryを更新
 ```
 
+**ArchiveIdeaUseCase**
+```text
+class ArchiveIdeaUseCase:
+  - repository: IIdeaRepository
+
+  constructor(repository: IIdeaRepository)
+
+  + execute(ideaId: IdeaId): Result<void, DomainError>
+    - ideaIdでIdeaを取得
+    - idea.archive()を実行
+    - repositoryを更新
+```
+
+**RestoreIdeaUseCase**
+```text
+class RestoreIdeaUseCase:
+  - repository: IIdeaRepository
+
+  constructor(repository: IIdeaRepository)
+
+  + execute(ideaId: IdeaId): Result<void, DomainError>
+    - ideaIdでIdeaを取得
+    - idea.restore()を実行
+    - repositoryを更新
+```
+
 #### DTO (Data Transfer Object)
 
 **IdeaSummary**
-```
+```text
 class IdeaSummary:
   - id: string
   - content: string (最初の100文字)
   - createdAt: DateTime
+  - archivedAt: DateTime | null
   - tagCount: number
+  - chunkCount: number
+  - hasAnalysis: boolean
 ```
 
 **IdeaDetail**
-```
+```text
 class IdeaDetail:
   - id: string
   - content: string
@@ -280,21 +323,21 @@ class IdeaDetail:
 ```
 
 **ChunkDetail**
-```
+```text
 class ChunkDetail:
   - content: string
   - createdAt: DateTime
 ```
 
 **TagDetail**
-```
+```text
 class TagDetail:
   - name: string
   - category: string
 ```
 
 **AnalysisDetail**
-```
+```text
 class AnalysisDetail:
   - generatedTags: List<TagDetail>
   - suggestion: string
@@ -309,23 +352,23 @@ class AnalysisDetail:
 #### リポジトリ実装
 
 **SQLiteIdeaRepository**
-```
+```text
 class SQLiteIdeaRepository implements IIdeaRepository:
   - dbPath: string
-  
+
   constructor(dbPath: string)
-  
+
   + save(idea: Idea): void
     - SQLiteにINSERT
-  
+
   + findById(id: IdeaId): Idea | null
     - SQLiteからSELECT
     - Ideaオブジェクトに変換
-  
+
   + findAll(): List<Idea>
     - SQLiteからSELECT ALL
     - Ideaオブジェクトのリストに変換
-  
+
   + update(idea: Idea): void
     - SQLiteでUPDATE
 ```
@@ -333,19 +376,19 @@ class SQLiteIdeaRepository implements IIdeaRepository:
 #### LLMサービス実装
 
 **OpenAILLMService**
-```
+```text
 class OpenAILLMService implements ILLMService:
   - apiKey: string
   - model: string
-  
+
   constructor(apiKey: string, model: string)
-  
+
   + generateTags(ideaContent: string, chunks: List<Chunk>): List<Tag>
     - プロンプトを構築
     - OpenAI APIを呼び出し
     - レスポンスをパース
     - Tagのリストに変換
-  
+
   + generateSuggestion(ideaContent: string, chunks: List<Chunk>, tags: List<Tag>): Suggestion
     - プロンプトを構築
     - OpenAI APIを呼び出し
@@ -360,7 +403,8 @@ class OpenAILLMService implements ILLMService:
 CREATE TABLE ideas (
   id TEXT PRIMARY KEY,
   content TEXT NOT NULL,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  archived_at TEXT DEFAULT NULL
 );
 ```
 
@@ -416,41 +460,31 @@ CREATE TABLE analysis_tags (
 #### CLIコントローラー
 
 **CLIController**
-```
+```text
 class CLIController:
-  - addIdeaUseCase: AddIdeaUseCase
-  - appendChunkUseCase: AppendChunkUseCase
-  - listIdeasUseCase: ListIdeasUseCase
-  - showIdeaUseCase: ShowIdeaUseCase
-  - analyzeIdeaUseCase: AnalyzeIdeaUseCase
-  - suggestActionUseCase: SuggestActionUseCase
-  - addTagUseCase: AddTagUseCase
-  - removeTagUseCase: RemoveTagUseCase
-  
+  - commandAPI: IdeaCommandAPI
+  - queryAPI: IdeaQueryAPI
+  - analysisAPI: IdeaAnalysisAPI
+
   constructor(
-    addIdeaUseCase: AddIdeaUseCase,
-    appendChunkUseCase: AppendChunkUseCase,
-    listIdeasUseCase: ListIdeasUseCase,
-    showIdeaUseCase: ShowIdeaUseCase,
-    analyzeIdeaUseCase: AnalyzeIdeaUseCase,
-    suggestActionUseCase: SuggestActionUseCase,
-    addTagUseCase: AddTagUseCase,
-    removeTagUseCase: RemoveTagUseCase
+    commandAPI: IdeaCommandAPI,
+    queryAPI: IdeaQueryAPI,
+    analysisAPI: IdeaAnalysisAPI
   )
-  
+
   + handleCommand(args: List<string>): void
     - コマンドをパース
-    - 適切なユースケースを呼び出し
+    - 適切なAPIファサードを呼び出し
     - 結果を表示
 ```
 
 #### コマンドハンドラー
 
 **AddIdeaCommandHandler**
-```
+```text
 class AddIdeaCommandHandler:
   - useCase: AddIdeaUseCase
-  
+
   + handle(content: string): void
     - 入力検証
     - useCaseを実行
@@ -458,10 +492,10 @@ class AddIdeaCommandHandler:
 ```
 
 **AppendChunkCommandHandler**
-```
+```text
 class AppendChunkCommandHandler:
   - useCase: AppendChunkUseCase
-  
+
   + handle(ideaId: string, content: string): void
     - 入力検証
     - useCaseを実行
@@ -469,20 +503,20 @@ class AppendChunkCommandHandler:
 ```
 
 **ListIdeasCommandHandler**
-```
+```text
 class ListIdeasCommandHandler:
   - useCase: ListIdeasUseCase
-  
+
   + handle(): void
     - useCaseを実行
     - 一覧を整形して表示
 ```
 
 **ShowIdeaCommandHandler**
-```
+```text
 class ShowIdeaCommandHandler:
   - useCase: ShowIdeaUseCase
-  
+
   + handle(ideaId: string): void
     - 入力検証
     - useCaseを実行
@@ -490,10 +524,10 @@ class ShowIdeaCommandHandler:
 ```
 
 **AnalyzeIdeaCommandHandler**
-```
+```text
 class AnalyzeIdeaCommandHandler:
   - useCase: AnalyzeIdeaUseCase
-  
+
   + handle(ideaId: string): void
     - 入力検証
     - useCaseを実行
@@ -501,10 +535,10 @@ class AnalyzeIdeaCommandHandler:
 ```
 
 **SuggestActionCommandHandler**
-```
+```text
 class SuggestActionCommandHandler:
   - useCase: SuggestActionUseCase
-  
+
   + handle(ideaId: string): void
     - 入力検証
     - useCaseを実行
@@ -527,6 +561,7 @@ erDiagram
         string id PK
         string content
         datetime createdAt
+        datetime archivedAt
     }
     
     Chunk {
@@ -744,7 +779,7 @@ erDiagram
 
 ### 例外処理の実装パターン
 
-```
+```text
 try:
   // ユースケースの実行
 catch ValidationError as e:
@@ -767,7 +802,7 @@ catch DatabaseError as e:
 
 本プロジェクトでは、テストピラミッドに従ったテスト配分を採用します：
 
-```
+```text
         /\
        /  \
       / E2E \ (少数)
@@ -962,6 +997,8 @@ APIは責務ごとに3つのファサードに分割されています。
 | チャンク追記 | `appendChunk` | `AppendChunkRequest` | `AppendChunkResponse` | 既存アイデアに追記 |
 | タグ追加 | `addTag` | `AddTagRequest` | `AddTagResponse` | 手動でタグを追加 |
 | タグ削除 | `removeTag` | `RemoveTagRequest` | `RemoveTagResponse` | タグを削除 |
+| アーカイブ | `archiveIdea` | `ArchiveIdeaRequest` | `ArchiveIdeaResponse` | アイデアをアーカイブ |
+| 復元 | `restoreIdea` | `RestoreIdeaRequest` | `RestoreIdeaResponse` | アーカイブから復元 |
 
 #### IdeaQueryAPI（クエリ系）
 
@@ -981,7 +1018,7 @@ APIは責務ごとに3つのファサードに分割されています。
 
 ### APIレイヤーの構成
 
-```
+```text
 ┌─────────────────────────────────────┐
 │   CLI (プレゼンテーション層)        │
 │   - コマンド解析                    │
@@ -1018,13 +1055,17 @@ class IdeaCommandAPI {
     private addIdeaUseCase: AddIdeaUseCase,
     private appendChunkUseCase: AppendChunkUseCase,
     private addTagUseCase: AddTagUseCase,
-    private removeTagUseCase: RemoveTagUseCase
+    private removeTagUseCase: RemoveTagUseCase,
+    private archiveIdeaUseCase: ArchiveIdeaUseCase,
+    private restoreIdeaUseCase: RestoreIdeaUseCase
   ) {}
 
   async addIdea(request: AddIdeaRequest): Promise<APIResponse<AddIdeaResponse>>
   async appendChunk(request: AppendChunkRequest): Promise<APIResponse<AppendChunkResponse>>
   async addTag(request: AddTagRequest): Promise<APIResponse<AddTagResponse>>
   async removeTag(request: RemoveTagRequest): Promise<APIResponse<RemoveTagResponse>>
+  async archiveIdea(request: ArchiveIdeaRequest): Promise<APIResponse<ArchiveIdeaResponse>>
+  async restoreIdea(request: RestoreIdeaRequest): Promise<APIResponse<RestoreIdeaResponse>>
 }
 ```
 
@@ -1916,52 +1957,52 @@ function getStatusCode(errorCode: string): number {
 
 ### DIコンテナの構成
 
-```
+```text
 class DIContainer:
   - dbPath: string
   - llmApiKey: string
   - llmModel: string
-  
+
   + createIdeaRepository(): IIdeaRepository
     return new SQLiteIdeaRepository(dbPath)
-  
+
   + createLLMService(): ILLMService
     return new OpenAILLMService(llmApiKey, llmModel)
-  
+
   + createAddIdeaUseCase(): AddIdeaUseCase
     repository = createIdeaRepository()
     return new AddIdeaUseCase(repository)
-  
+
   + createAppendChunkUseCase(): AppendChunkUseCase
     repository = createIdeaRepository()
     return new AppendChunkUseCase(repository)
-  
+
   + createListIdeasUseCase(): ListIdeasUseCase
     repository = createIdeaRepository()
     return new ListIdeasUseCase(repository)
-  
+
   + createShowIdeaUseCase(): ShowIdeaUseCase
     repository = createIdeaRepository()
     return new ShowIdeaUseCase(repository)
-  
+
   + createAnalyzeIdeaUseCase(): AnalyzeIdeaUseCase
     repository = createIdeaRepository()
     llmService = createLLMService()
     return new AnalyzeIdeaUseCase(repository, llmService)
-  
+
   + createSuggestActionUseCase(): SuggestActionUseCase
     repository = createIdeaRepository()
     llmService = createLLMService()
     return new SuggestActionUseCase(repository, llmService)
-  
+
   + createAddTagUseCase(): AddTagUseCase
     repository = createIdeaRepository()
     return new AddTagUseCase(repository)
-  
+
   + createRemoveTagUseCase(): RemoveTagUseCase
     repository = createIdeaRepository()
     return new RemoveTagUseCase(repository)
-  
+
   + createCommandAPI(): IdeaCommandAPI
     return new IdeaCommandAPI(
       createAddIdeaUseCase(),
@@ -1969,19 +2010,19 @@ class DIContainer:
       createAddTagUseCase(),
       createRemoveTagUseCase()
     )
-  
+
   + createQueryAPI(): IdeaQueryAPI
     return new IdeaQueryAPI(
       createListIdeasUseCase(),
       createShowIdeaUseCase()
     )
-  
+
   + createAnalysisAPI(): IdeaAnalysisAPI
     return new IdeaAnalysisAPI(
       createAnalyzeIdeaUseCase(),
       createSuggestActionUseCase()
     )
-  
+
   + createCLIController(): CLIController
     commandAPI = createCommandAPI()
     queryAPI = createQueryAPI()
@@ -1991,38 +2032,38 @@ class DIContainer:
 
 ### アプリケーションエントリーポイント
 
-```
+```text
 function main(args: List<string>):
   // 設定の読み込み
   config = loadConfig()
-  
+
   // DIコンテナの初期化
   container = new DIContainer(
     config.dbPath,
     config.llmApiKey,
     config.llmModel
   )
-  
+
   // CLIコントローラーの作成
   controller = container.createCLIController()
-  
+
   // コマンドの実行
   controller.handleCommand(args)
 ```
 
 ### テスト時の依存性注入
 
-```
+```text
 function testAddIdeaUseCase():
   // モックリポジトリの作成
   mockRepository = new MockIdeaRepository()
-  
+
   // ユースケースの作成（モックを注入）
   useCase = new AddIdeaUseCase(mockRepository)
-  
+
   // テストの実行
   ideaId = useCase.execute("テストアイデア")
-  
+
   // 検証
   assert mockRepository.saveCalled == true
 ```
@@ -2067,3 +2108,278 @@ LLMサービスインターフェースにより、プロバイダーの変更�
 4. プレゼンテーション層にハンドラーを追加
 
 既存のコードへの影響を最小限に抑えられます。
+
+## 技術決定事項
+
+以下は、dig セッションで決定された技術的選択です。
+
+### 技術スタック
+
+| カテゴリ | 選択 | 備考 |
+|---------|------|------|
+| LLMプロバイダー | Ollama (llama3.2) | ローカル実行、プライバシー保護、設定で変更可能 |
+| パッケージマネージャー | pnpm | 高速、ディスク効率良い |
+| ビルドツール | tsup | esbuildベース、高速 |
+| テストフレームワーク | Vitest + fast-check | Jest互換、プロパティベーステスト対応 |
+| SQLiteライブラリ | better-sqlite3 | 同期API、最速 |
+| CLIパーサー | Commander.js | サブコマンド対応、ドキュメント豊富 |
+| ID生成 | ULID | ソート可能、時系列順 |
+
+### 実行・設定
+
+| 項目 | 選択 | 備考 |
+|------|------|------|
+| 実行方法 | ローカル実行のみ | `pnpm run idea` で実行 |
+| 設定管理 | 環境変数 + config.json | 環境変数が設定ファイルを上書き |
+| DB保存場所 | カレントディレクトリ (.idea-pool/) | プロジェクト単位で管理 |
+| DBマイグレーション | 初期化時に自動作成のみ | テーブルがなければ作成 |
+
+### UI/UX
+
+| 項目 | 選択 | 備考 |
+|------|------|------|
+| 出力形式 | プレーンテキスト | パイプ処理に適合 |
+| 複数行入力 | インライン入力のみ | 1行で入力 |
+| タグ言語 | 日本語 | LLMが日本語で生成 |
+| ページネーション | リミット式 (デフォルト10件) | タグフィルタも対応 |
+| Ollama未起動時 | エラー表示のみ | ユーザーが手動起動 |
+
+### LLM連携
+
+| 項目 | 選択 | 備考 |
+|------|------|------|
+| モデル | llama3.2 | 設定で変更可能 |
+| レスポンス形式 | JSON | パースが容易 |
+| タグカテゴリ | 6種類 | 性質、規模感、技術難易度、開発フェーズ、リスク、領域 |
+
+### 追加機能
+
+#### ソフトデリート機能
+
+要件定義書にはない追加機能として、ソフトデリートを実装します。
+
+**Ideaエンティティの拡張**
+```text
+class Idea:
+  - id: IdeaId
+  - content: string
+  - createdAt: DateTime
+  - archivedAt: DateTime | null  # 追加: アーカイブ日時
+  - chunks: List<Chunk>
+  - tags: List<Tag>
+  - analyses: List<Analysis>
+
+  + archive(): void              # 追加
+  + restore(): void              # 追加
+  + isArchived(): boolean        # 追加
+```
+
+**追加コマンド**
+- `idea archive <id>` - アイデアをアーカイブ
+- `idea restore <id>` - アーカイブからアイデアを復元
+
+**データベーススキーマの変更**
+```sql
+ALTER TABLE ideas ADD COLUMN archived_at TEXT DEFAULT NULL;
+```
+
+**一覧表示の動作**
+- `idea list` - アーカイブされていないアイデアのみ表示
+- `idea list --archived` - アーカイブされたアイデアのみ表示
+- `idea list --all` - すべてのアイデアを表示
+
+#### タグフィルタ機能
+
+一覧表示時にタグで絞り込みができます。
+
+```bash
+# 特定のタグを持つアイデアを表示
+idea list --tag "Web開発"
+
+# 複数のタグで絞り込み（AND条件）
+idea list --tag "Web開発" --tag "大規模"
+
+# リミットとの併用
+idea list --tag "Web開発" --limit 5
+```
+
+### OllamaLLMService
+
+OpenAILLMServiceの代わりに、OllamaLLMServiceを実装します。
+
+```typescript
+class OllamaLLMService implements ILLMService {
+  private baseUrl: string;  // デフォルト: http://localhost:11434
+  private model: string;    // デフォルト: llama3.2
+
+  constructor(baseUrl: string, model: string)
+
+  async generateTags(ideaContent: string, chunks: List<Chunk>): Promise<List<Tag>>
+  async generateSuggestion(ideaContent: string, chunks: List<Chunk>, tags: List<Tag>): Promise<Suggestion>
+
+  private async checkConnection(): Promise<boolean>
+}
+```
+
+**プロンプト設計（タグ生成）**
+```text
+あなたはソフトウェアアイデアを分析するアシスタントです。
+以下のアイデアを分析し、JSON形式でタグを生成してください。
+
+アイデア:
+{ideaContent}
+
+追記:
+{chunks}
+
+以下の6つのカテゴリそれぞれについて、最も適切なタグを1つずつ選んでください。
+
+出力形式:
+{
+  "tags": [
+    {"name": "タグ名", "category": "NATURE"},
+    {"name": "タグ名", "category": "SCALE"},
+    {"name": "タグ名", "category": "DIFFICULTY"},
+    {"name": "タグ名", "category": "PHASE"},
+    {"name": "タグ名", "category": "RISK"},
+    {"name": "タグ名", "category": "DOMAIN"}
+  ]
+}
+
+カテゴリの説明:
+- NATURE (性質): 新規開発、改善、実験、学習、etc.
+- SCALE (規模感): 小規模、中規模、大規模、etc.
+- DIFFICULTY (技術難易度): 簡単、普通、難しい、etc.
+- PHASE (開発フェーズ): 構想段階、設計段階、実装段階、etc.
+- RISK (リスク): 低リスク、中リスク、高リスク、etc.
+- DOMAIN (領域): Web開発、モバイル、AI/ML、インフラ、etc.
+```
+
+**プロンプト設計（行動指針生成）**
+```text
+あなたはソフトウェアアイデアに対して、次のステップを提案するアシスタントです。
+正解を出すのではなく、思考を前に進める補助輪として機能してください。
+
+アイデア:
+{ideaContent}
+
+追記:
+{chunks}
+
+タグ:
+{tags}
+
+以下の点を考慮して、このアイデアに対する次のステップを提案してください:
+- 現実的で実行可能なアクション
+- アイデアの規模と難易度に応じた段階的なアプローチ
+- リスクを考慮した慎重な進め方
+
+出力形式:
+{
+  "suggestion": {
+    "content": "提案内容（2-3文で簡潔に）",
+    "reasoning": "なぜこの提案が適切かの理由（1-2文）"
+  }
+}
+
+注意:
+- 断定的な命令形は使用しないでください
+- 「〜してみてはいかがでしょうか」「〜を検討するのも良いかもしれません」のような柔らかい表現を使用してください
+- ユーザーの状況や制約を尊重した提案にしてください
+```
+
+### 設定ファイル
+
+**~/.idea-pool/config.json または .idea-pool/config.json**
+```json
+{
+  "llm": {
+    "provider": "ollama",
+    "baseUrl": "http://localhost:11434",
+    "model": "llama3.2"
+  },
+  "database": {
+    "path": ".idea-pool/ideas.db"
+  },
+  "list": {
+    "defaultLimit": 10
+  }
+}
+```
+
+**環境変数による上書き**
+- `IDEA_POOL_LLM_PROVIDER` - LLMプロバイダー
+- `IDEA_POOL_LLM_BASE_URL` - Ollama URL
+- `IDEA_POOL_LLM_MODEL` - モデル名
+- `IDEA_POOL_DB_PATH` - データベースパス
+
+### 初期化処理
+
+**`.idea-pool`ディレクトリの初期化**
+
+アプリケーション起動時に以下の処理を行います:
+
+1. カレントディレクトリに`.idea-pool`ディレクトリが存在するか確認
+2. 存在しない場合は作成
+3. `ideas.db`ファイルが存在するか確認
+4. 存在しない場合はテーブルを作成（CREATE TABLE IF NOT EXISTS）
+
+```typescript
+async function initializeDatabase(dbPath: string): Promise<void> {
+  const dir = path.dirname(dbPath);
+
+  // ディレクトリがなければ作成
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  // データベース接続（ファイルがなければ自動作成）
+  const db = new Database(dbPath);
+
+  // テーブル作成（存在しなければ）
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ideas (...);
+    CREATE TABLE IF NOT EXISTS chunks (...);
+    CREATE TABLE IF NOT EXISTS tags (...);
+    CREATE TABLE IF NOT EXISTS analyses (...);
+    CREATE TABLE IF NOT EXISTS analysis_tags (...);
+  `);
+}
+```
+
+**日時フォーマット**
+
+すべての日時はISO 8601形式の文字列としてSQLiteに保存します:
+- 形式: `YYYY-MM-DDTHH:mm:ss.sssZ`
+- 例: `2024-01-15T09:30:00.000Z`
+- タイムゾーン: UTC
+
+### 更新されたコマンド一覧
+
+```bash
+# 基本操作
+idea add <text>              # アイデアを登録
+idea append <id> <text>      # アイデアに追記
+idea list                    # アイデア一覧（新しい順10件）
+idea list --limit 20         # 件数指定
+idea list --tag "Web開発"    # タグで絞り込み
+idea list --archived         # アーカイブされたもののみ
+idea show <id>               # アイデア詳細
+
+# 分析・提案
+idea analyze <id>            # LLMでタグ生成
+idea suggest <id>            # LLMで行動指針を提案
+idea suggest <id> --analysis-id <aid>  # 特定の分析を使用
+
+# タグ操作
+idea tag add <id> <name> --category <cat>  # タグを追加
+idea tag remove <id> <name>                # タグを削除
+
+# アーカイブ操作
+idea archive <id>            # アイデアをアーカイブ
+idea restore <id>            # アーカイブから復元
+
+# ヘルプ
+idea --help                  # ヘルプ表示
+idea <command> --help        # コマンド別ヘルプ
+```

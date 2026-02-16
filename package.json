@@ -1,8 +1,57 @@
 {
   "name": "idea-pool-vc",
   "version": "1.0.0",
-  "description": "Idea pooling and tagging project",
+  "description": "CLI tool for accumulating and classifying software ideas using LLM",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "idea": "dist/index.js"
+  },
   "scripts": {
-    "build:hooks-rs": "cd .claude/hooks-rs && cargo build --release && cp target/release/validate-command.exe ../validate-command.exe"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "idea": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "build:hooks-rs": "cd .claude/hooks-rs && cargo build --release && node -e \"const p=process.platform==='win32'?'.exe':'';require('fs').copyFileSync('target/release/validate-command'+p,'../validate-command'+p)\""
+  },
+  "keywords": [
+    "idea",
+    "cli",
+    "llm",
+    "tagging",
+    "classification"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "commander": "^13.1.0",
+    "dotenv": "^16.4.7",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.4",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^9.0.0",
+    "fast-check": "^3.23.2",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
   }
 }

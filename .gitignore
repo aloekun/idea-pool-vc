@@ -21,6 +21,18 @@ Thumbs.db
 # Node
 node_modules/
 
+# Build output
+dist/
+
+# Test coverage
+coverage/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+data/
+
 # Personal configs (if any)
 personal/
 private/
@@ -33,6 +45,9 @@ examples/sessions/*.tmp
 
 # Built executables (can be rebuilt with npm run build:hooks-rs)
 .claude/validate-command.exe
+
+# Local settings (user-specific)
+.claude/settings.local.json
 
 # Rust build artifacts
 .claude/hooks-rs/target/

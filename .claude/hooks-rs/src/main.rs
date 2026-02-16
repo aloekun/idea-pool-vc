@@ -44,7 +44,7 @@ fn get_blocked_patterns() -> Vec<BlockedPattern> {
 - ゴミ箱への移動を検討"#,
         },
         BlockedPattern {
-            pattern: Regex::new(r"(?i)^git\s+").unwrap(),
+            pattern: Regex::new(r"(?i)(?:^|&&|;|\|)\s*git\s+").unwrap(),
             message: r#"**git コマンドがブロックされました**
 
 このプロジェクトでは Jujutsu (jj) をバージョン管理に使用しています。
