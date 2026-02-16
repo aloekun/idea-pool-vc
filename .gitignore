@@ -36,3 +36,6 @@ examples/sessions/*.tmp
 
 # Rust build artifacts
 .claude/hooks-rs/target/
+
+# Serena cache files (language server cache, etc.)
+.serena/cache/
