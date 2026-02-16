@@ -14,6 +14,7 @@ describe('Result', () => {
     it('should map value', () => {
       const result = success(2)
       const mapped = result.map((x) => x * 3)
+      expect(isSuccess(mapped)).toBe(true)
       if (isSuccess(mapped)) {
         expect(mapped.value).toBe(6)
       }
@@ -22,6 +23,7 @@ describe('Result', () => {
     it('should flatMap to another result', () => {
       const result = success(2)
       const flatMapped = result.flatMap((x) => success(x * 3))
+      expect(isSuccess(flatMapped)).toBe(true)
       if (isSuccess(flatMapped)) {
         expect(flatMapped.value).toBe(6)
       }
@@ -49,6 +51,7 @@ describe('Result', () => {
     it('should not map value', () => {
       const result = failure<string>('error')
       const mapped = result.map((x: never) => x)
+      expect(isFailure(mapped)).toBe(true)
       if (isFailure(mapped)) {
         expect(mapped.error).toBe('error')
       }
@@ -57,6 +60,7 @@ describe('Result', () => {
     it('should not flatMap', () => {
       const result = failure<string>('error')
       const flatMapped = result.flatMap(() => success(42))
+      expect(isFailure(flatMapped)).toBe(true)
       if (isFailure(flatMapped)) {
         expect(flatMapped.error).toBe('error')
       }

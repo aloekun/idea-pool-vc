@@ -60,7 +60,10 @@ function loadConfigFile(): Partial<AppConfig> {
   try {
     const content = fs.readFileSync(configPath, 'utf-8')
     return JSON.parse(content) as Partial<AppConfig>
-  } catch {
+  } catch (error) {
+    console.warn(
+      `Failed to parse config file at ${configPath}: ${error instanceof Error ? error.message : 'Unknown error'}. Using defaults.`
+    )
     return {}
   }
 }

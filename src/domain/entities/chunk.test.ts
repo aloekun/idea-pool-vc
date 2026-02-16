@@ -23,9 +23,18 @@ describe('Chunk', () => {
     it('should throw error for whitespace-only content', () => {
       expect(() => Chunk.create('   ')).toThrow('Chunk content cannot be empty')
     })
+
+    it('should throw error for tabs and newlines only', () => {
+      expect(() => Chunk.create('\t\n')).toThrow('Chunk content cannot be empty')
+    })
   })
 
   describe('equals', () => {
+    it('should return true for same chunk', () => {
+      const chunk = Chunk.create('Content')
+      expect(chunk.equals(chunk)).toBe(true)
+    })
+
     it('should return false for different chunks', () => {
       const chunk1 = Chunk.create('Content 1')
       const chunk2 = Chunk.create('Content 2')

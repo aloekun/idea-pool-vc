@@ -13,29 +13,16 @@ export class MockIdeaRepository implements IIdeaRepository {
   }
 
   async findAll(options?: ListIdeasOptions): Promise<readonly Idea[]> {
-    let ideas = Array.from(this.ideas.values())
-
-    if (options?.archivedOnly) {
-      ideas = ideas.filter((idea) => idea.isArchived())
-    } else if (!options?.includeArchived) {
-      ideas = ideas.filter((idea) => !idea.isArchived())
-    }
-
-    ideas.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-
-    if (options?.limit) {
-      ideas = ideas.slice(0, options.limit)
-    }
-
-    return ideas
+    const ideas = Array.from(this.ideas.values())
+    return this.applyFilters(ideas, options)
   }
 
   async findAllActive(options?: ListIdeasOptions): Promise<readonly Idea[]> {
-    return this.findAll({ ...options, archivedOnly: false, includeArchived: false })
+    return this.findAll({ ...options, archiveFilter: 'active' })
   }
 
   async findAllArchived(options?: ListIdeasOptions): Promise<readonly Idea[]> {
-    return this.findAll({ ...options, archivedOnly: true })
+    return this.findAll({ ...options, archiveFilter: 'archived' })
   }
 
   async findByTags(
@@ -46,25 +33,11 @@ export class MockIdeaRepository implements IIdeaRepository {
       return this.findAll(options)
     }
 
-    let ideas = Array.from(this.ideas.values())
-
-    ideas = ideas.filter((idea) =>
+    const ideas = Array.from(this.ideas.values()).filter((idea) =>
       tags.every((tagName) => idea.tags.some((t) => t.name === tagName))
     )
 
-    if (options?.archivedOnly) {
-      ideas = ideas.filter((idea) => idea.isArchived())
-    } else if (!options?.includeArchived) {
-      ideas = ideas.filter((idea) => !idea.isArchived())
-    }
-
-    ideas.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-
-    if (options?.limit) {
-      ideas = ideas.slice(0, options.limit)
-    }
-
-    return ideas
+    return this.applyFilters(ideas, options)
   }
 
   async update(idea: Idea): Promise<void> {
@@ -84,5 +57,27 @@ export class MockIdeaRepository implements IIdeaRepository {
 
   count(): number {
     return this.ideas.size
+  }
+
+  private applyFilters(
+    ideas: Idea[],
+    options?: ListIdeasOptions
+  ): readonly Idea[] {
+    let filtered = [...ideas]
+
+    const archiveFilter = options?.archiveFilter ?? 'active'
+    if (archiveFilter === 'archived') {
+      filtered = filtered.filter((idea) => idea.isArchived())
+    } else if (archiveFilter === 'active') {
+      filtered = filtered.filter((idea) => !idea.isArchived())
+    }
+
+    filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+    if (options?.limit) {
+      filtered = filtered.slice(0, options.limit)
+    }
+
+    return filtered
   }
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import * as fc from 'fast-check'
 import { MockIdeaRepository } from './mock-idea-repository.js'
-import { Idea, Tag, TagCategory } from '../../domain/index.js'
+import { Idea, IdeaId, Tag, TagCategory } from '../../domain/index.js'
 
 describe('MockIdeaRepository', () => {
   let repository: MockIdeaRepository
@@ -32,9 +32,34 @@ describe('MockIdeaRepository', () => {
 
   describe('findAll', () => {
     it('should return all non-archived ideas in descending order', async () => {
-      const idea1 = Idea.create('First idea')
-      const idea2 = Idea.create('Second idea')
-      const idea3 = Idea.create('Third idea')
+      const now = new Date()
+      const idea1 = Idea.reconstruct({
+        id: IdeaId.generate(),
+        content: 'First idea',
+        createdAt: new Date(now.getTime() - 2000),
+        archivedAt: null,
+        chunks: [],
+        tags: [],
+        analyses: [],
+      })
+      const idea2 = Idea.reconstruct({
+        id: IdeaId.generate(),
+        content: 'Second idea',
+        createdAt: new Date(now.getTime() - 1000),
+        archivedAt: null,
+        chunks: [],
+        tags: [],
+        analyses: [],
+      })
+      const idea3 = Idea.reconstruct({
+        id: IdeaId.generate(),
+        content: 'Third idea',
+        createdAt: now,
+        archivedAt: null,
+        chunks: [],
+        tags: [],
+        analyses: [],
+      })
 
       await repository.save(idea1)
       await repository.save(idea2)
@@ -43,6 +68,9 @@ describe('MockIdeaRepository', () => {
       const all = await repository.findAll()
 
       expect(all).toHaveLength(3)
+      expect(all[0].content).toBe('Third idea')
+      expect(all[1].content).toBe('Second idea')
+      expect(all[2].content).toBe('First idea')
     })
 
     it('should respect limit option', async () => {

@@ -90,10 +90,17 @@ Note:
 - Generate in Japanese.`
 
 export class OllamaLLMService implements ILLMService {
+  private readonly connectionTimeoutMs: number
+  private readonly generateTimeoutMs: number
+
   constructor(
     private readonly baseUrl: string = 'http://localhost:11434',
-    private readonly model: string = 'llama3.2'
-  ) {}
+    private readonly model: string = 'llama3.2',
+    options?: { connectionTimeoutMs?: number; generateTimeoutMs?: number }
+  ) {
+    this.connectionTimeoutMs = options?.connectionTimeoutMs ?? 10_000
+    this.generateTimeoutMs = options?.generateTimeoutMs ?? 120_000
+  }
 
   async generateTags(
     ideaContent: string,
@@ -161,11 +168,17 @@ export class OllamaLLMService implements ILLMService {
   }
 
   async checkConnection(): Promise<boolean> {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), this.connectionTimeoutMs)
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`)
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        signal: controller.signal,
+      })
       return response.ok
     } catch {
       return false
+    } finally {
+      clearTimeout(timer)
     }
   }
 
@@ -177,21 +190,36 @@ export class OllamaLLMService implements ILLMService {
       stream: false,
     }
 
-    const response = await fetch(`${this.baseUrl}/api/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    })
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), this.generateTimeoutMs)
+    try {
+      const response = await fetch(`${this.baseUrl}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+        signal: controller.signal,
+      })
 
-    if (!response.ok) {
-      throw new LLMServiceError(
-        `Ollama API error: ${response.status} ${response.statusText}`
-      )
+      if (!response.ok) {
+        throw new LLMServiceError(
+          `Ollama API error: ${response.status} ${response.statusText}`
+        )
+      }
+
+      const data = (await response.json()) as OllamaGenerateResponse
+      return data.response
+    } catch (error) {
+      if (error instanceof LLMServiceError) {
+        throw error
+      }
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new LLMServiceError('Ollama API request timed out')
+      }
+      throw error
+    } finally {
+      clearTimeout(timer)
     }
-
-    const data = (await response.json()) as OllamaGenerateResponse
-    return data.response
   }
 }

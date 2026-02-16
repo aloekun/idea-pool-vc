@@ -74,16 +74,27 @@ pnpm run idea archive <id>      # アーカイブ
 - Parameterized queries only
 - CSRF protection enabled
 
-## File Structure(Example)
-これはサンプルです。今後実装を進めながら、フォルダ階層を調整し、情報を更新してください。
+## File Structure
 
 ```
 src/
-|-- app/              # Next.js app router
-|-- components/       # Reusable UI components
-|-- hooks/            # Custom React hooks
-|-- lib/              # Utility libraries
-|-- types/            # TypeScript definitions
+|-- domain/           # Domain layer (entities, value objects, interfaces)
+|   |-- entities/     # Idea, Chunk, Tag, Analysis, Suggestion
+|   |-- value-objects/ # IdeaId, ChunkId, AnalysisId, TagCategory
+|   |-- interfaces/   # IIdeaRepository, ILLMService
+|   |-- errors/       # DomainError, ValidationError, etc.
+|-- application/      # Application layer (use cases, DTOs)
+|   |-- dto/          # API response types, IdeaDTO
+|-- infrastructure/   # Infrastructure layer
+|   |-- database/     # SQLite repository, schema, connection
+|   |-- llm/          # Ollama LLM service
+|   |-- config/       # App configuration
+|   |-- testing/      # Mock implementations
+|-- shared/           # Shared utilities (Result type)
+docs/
+|-- design.md         # Architecture and design document
+|-- requirements.md   # Requirements specification
+|-- tasks.md          # Task list
 ```
 
 ## Key Patterns
@@ -113,12 +124,16 @@ try {
 ## Environment Variables
 
 ```bash
-# Required
-DATABASE_URL=
-API_KEY=
+# LLM settings
+IDEA_POOL_LLM_PROVIDER=ollama
+IDEA_POOL_LLM_BASE_URL=http://localhost:11434
+IDEA_POOL_LLM_MODEL=llama3.2
 
-# Optional
-DEBUG=false
+# Database
+IDEA_POOL_DB_PATH=.idea-pool/ideas.db
+
+# List display
+IDEA_POOL_LIST_DEFAULT_LIMIT=10
 ```
 
 ## Available Commands

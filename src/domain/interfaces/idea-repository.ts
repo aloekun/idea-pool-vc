@@ -1,11 +1,12 @@
 import type { IdeaId } from '../value-objects/index.js'
 import type { Idea } from '../entities/index.js'
 
+export type ArchiveFilter = 'active' | 'archived' | 'all'
+
 export interface ListIdeasOptions {
   readonly limit?: number
   readonly tags?: readonly string[]
-  readonly includeArchived?: boolean
-  readonly archivedOnly?: boolean
+  readonly archiveFilter?: ArchiveFilter
 }
 
 export interface IIdeaRepository {

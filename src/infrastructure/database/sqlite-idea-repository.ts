@@ -135,9 +135,10 @@ export class SQLiteIdeaRepository implements IIdeaRepository {
     let query = 'SELECT * FROM ideas'
     const params: unknown[] = []
 
-    if (options?.archivedOnly) {
+    const archiveFilter = options?.archiveFilter ?? 'active'
+    if (archiveFilter === 'archived') {
       query += ' WHERE archived_at IS NOT NULL'
-    } else if (!options?.includeArchived) {
+    } else if (archiveFilter === 'active') {
       query += ' WHERE archived_at IS NULL'
     }
 
@@ -159,11 +160,11 @@ export class SQLiteIdeaRepository implements IIdeaRepository {
   }
 
   async findAllActive(options?: ListIdeasOptions): Promise<readonly Idea[]> {
-    return this.findAll({ ...options, archivedOnly: false, includeArchived: false })
+    return this.findAll({ ...options, archiveFilter: 'active' })
   }
 
   async findAllArchived(options?: ListIdeasOptions): Promise<readonly Idea[]> {
-    return this.findAll({ ...options, archivedOnly: true })
+    return this.findAll({ ...options, archiveFilter: 'archived' })
   }
 
   async findByTags(
@@ -174,23 +175,25 @@ export class SQLiteIdeaRepository implements IIdeaRepository {
       return this.findAll(options)
     }
 
-    const placeholders = tags.map(() => '?').join(', ')
+    const uniqueTags = [...new Set(tags)]
+    const placeholders = uniqueTags.map(() => '?').join(', ')
     let query = `
       SELECT DISTINCT i.*
       FROM ideas i
       INNER JOIN tags t ON i.id = t.idea_id
       WHERE t.name IN (${placeholders})
     `
-    const params: unknown[] = [...tags]
+    const params: unknown[] = [...uniqueTags]
 
-    if (options?.archivedOnly) {
+    const archiveFilter = options?.archiveFilter ?? 'active'
+    if (archiveFilter === 'archived') {
       query += ' AND i.archived_at IS NOT NULL'
-    } else if (!options?.includeArchived) {
+    } else if (archiveFilter === 'active') {
       query += ' AND i.archived_at IS NULL'
     }
 
     query += ' GROUP BY i.id HAVING COUNT(DISTINCT t.name) = ?'
-    params.push(tags.length)
+    params.push(uniqueTags.length)
 
     query += ' ORDER BY i.created_at DESC'
 

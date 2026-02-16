@@ -206,7 +206,7 @@ describe('SQLiteIdeaRepository', () => {
   })
 
   describe('update', () => {
-    it('should update idea content', async () => {
+    it('should update idea chunks', async () => {
       const idea = Idea.create('Original content')
       await repository.save(idea)
 

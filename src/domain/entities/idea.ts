@@ -26,8 +26,8 @@ export class Idea {
   private constructor(props: IdeaProps) {
     this.id = props.id
     this.content = props.content
-    this.createdAt = props.createdAt
-    this.archivedAt = props.archivedAt
+    this.createdAt = new Date(props.createdAt.getTime())
+    this.archivedAt = props.archivedAt ? new Date(props.archivedAt.getTime()) : null
     this.chunks = Object.freeze([...props.chunks])
     this.tags = Object.freeze([...props.tags])
     this.analyses = Object.freeze([...props.analyses])

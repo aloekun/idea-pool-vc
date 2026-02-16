@@ -28,5 +28,5 @@ export {
 } from './errors/index.js'
 
 // Interfaces
-export type { IIdeaRepository, ListIdeasOptions } from './interfaces/index.js'
+export type { IIdeaRepository, ListIdeasOptions, ArchiveFilter } from './interfaces/index.js'
 export type { ILLMService } from './interfaces/index.js'

@@ -118,15 +118,25 @@ describe('MockLLMService', () => {
       expect(service.getCallCount()).toBe(2)
     })
 
-    it('should reset all tracking state', async () => {
-      await service.generateTags('Test', [])
-      await service.generateSuggestion('Test', [], [])
+    it('should reset all tracking state and restore default behavior', async () => {
+      service.setShouldFail(true, 'fail')
+      service.setOptions({
+        customTags: [Tag.create('Custom', TagCategory.domain())],
+      })
+      await service.generateTags('Test', []).catch(() => {})
+      await service.generateSuggestion('Test', [], []).catch(() => {})
 
       service.reset()
 
       expect(service.getCallCount()).toBe(0)
       expect(service.getLastGenerateTagsArgs()).toBeNull()
       expect(service.getLastGenerateSuggestionArgs()).toBeNull()
+
+      // Verify default behavior is restored (no longer failing, returns defaults)
+      const tags = await service.generateTags('Test', [])
+      expect(tags).toHaveLength(6)
+      const connected = await service.checkConnection()
+      expect(connected).toBe(true)
     })
   })
 })

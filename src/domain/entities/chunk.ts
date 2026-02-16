@@ -14,7 +14,7 @@ export class Chunk {
   private constructor(props: ChunkProps) {
     this.id = props.id
     this.content = props.content
-    this.createdAt = props.createdAt
+    this.createdAt = new Date(props.createdAt.getTime())
     Object.freeze(this)
   }
 

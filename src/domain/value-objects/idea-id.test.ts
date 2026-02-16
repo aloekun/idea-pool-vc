@@ -59,16 +59,14 @@ describe('IdeaId', () => {
   })
 
   describe('Property: ID uniqueness', () => {
-    it('generated IDs should be unique (100 iterations)', () => {
+    it('each pair of generated IDs should be unique (10000 iterations)', () => {
       fc.assert(
         fc.property(fc.constant(null), () => {
-          const ids = new Set<string>()
-          for (let i = 0; i < 100; i++) {
-            ids.add(IdeaId.generate().value)
-          }
-          return ids.size === 100
+          const id1 = IdeaId.generate()
+          const id2 = IdeaId.generate()
+          return !id1.equals(id2)
         }),
-        { numRuns: 100 }
+        { numRuns: 10_000 }
       )
     })
   })
