@@ -62,6 +62,6 @@ pnpm run test -- -t "should create idea"
 # Coverage for specific directory
 pnpm run test:coverage -- src/domain/
 
-# Typecheck and lint in parallel
+# Typecheck and lint sequentially (lint runs only if typecheck passes)
 pnpm run typecheck && pnpm run lint
 ```
