@@ -74,7 +74,7 @@
 
 ### 担当者A: コマンド系機能
 
-- [ ] 2A.1 バリデーション付きRequestオブジェクトの実装
+- [x] 2A.1 バリデーション付きRequestオブジェクトの実装
   - AddIdeaRequestクラス（バリデーション付き）
   - AppendChunkRequestクラス（バリデーション付き）
   - AddTagRequestクラス（バリデーション付き）
@@ -83,11 +83,11 @@
   - RestoreIdeaRequestクラス（バリデーション付き）
   - Requestオブジェクトのユニットテスト
 
-- [ ] 2A.2 Responseオブジェクトの定義
+- [x] 2A.2 Responseオブジェクトの定義
   - AddIdeaResponse, AppendChunkResponse, AddTagResponse, RemoveTagResponseの定義
   - ArchiveIdeaResponse, RestoreIdeaResponseの定義
 
-- [ ] 2A.3 コマンド系ユースケースの実装
+- [x] 2A.3 コマンド系ユースケースの実装
   - AddIdeaUseCaseの実装（Result型を返す）
   - AppendChunkUseCaseの実装（Result型を返す）
   - AddTagUseCaseの実装（Result型を返す）
@@ -96,12 +96,12 @@
   - RestoreIdeaUseCaseの実装（Result型を返す）
   - ユースケースのユニットテスト（モックリポジトリを使用）
 
-- [ ] 2A.4 IdeaCommandAPIの実装
+- [x] 2A.4 IdeaCommandAPIの実装
   - IdeaCommandAPIクラスの実装（addIdea, appendChunk, addTag, removeTag, archiveIdea, restoreIdeaメソッド）
   - Result型からAPIResponseへの変換ロジック実装
   - IdeaCommandAPIのユニットテスト（モックユースケースを使用）
 
-- [ ] 2A.5 CLIコマンドハンドラーの実装（コマンド系）
+- [x] 2A.5 CLIコマンドハンドラーの実装（コマンド系）
   - handleAddCommandの実装
   - handleAppendCommandの実装
   - handleAddTagCommandの実装
@@ -110,7 +110,7 @@
   - handleRestoreCommandの実装
   - コマンドハンドラーのユニットテスト（モックAPIを使用）
 
-- [ ] 2A.6 プロパティベーステスト（コマンド系）
+- [x] 2A.6 プロパティベーステスト（コマンド系）
   - プロパティ1: アイデア保存のラウンドトリップ
   - プロパティ4: 空文字列入力の拒否
   - プロパティ5: チャンク追加のラウンドトリップ
