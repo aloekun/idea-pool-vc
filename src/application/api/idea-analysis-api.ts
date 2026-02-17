@@ -53,8 +53,8 @@ export class IdeaAnalysisAPI {
 
       const data = result.value
       return createSuccessResponse<SuggestActionResponse>({
-        analysisId: data.analysisId,
-        usedAnalysisId: data.usedAnalysisId,
+        analysisId: data.newAnalysisId.value,
+        usedAnalysisId: data.usedAnalysisId.value,
         suggestion: toSuggestionDTO(data.suggestion),
         createdAt: data.createdAt.toISOString(),
       })

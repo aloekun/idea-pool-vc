@@ -20,7 +20,6 @@ import type { AddTagUseCase } from '../use-cases/add-tag-use-case.js'
 import type { RemoveTagUseCase } from '../use-cases/remove-tag-use-case.js'
 import type { ArchiveIdeaUseCase } from '../use-cases/archive-idea-use-case.js'
 import type { RestoreIdeaUseCase } from '../use-cases/restore-idea-use-case.js'
-import type { ShowIdeaUseCase } from '../use-cases/show-idea-use-case.js'
 import { IdeaId, Tag, TagCategory } from '../../domain/index.js'
 import { convertDomainErrorToAPIError } from './error-converter.js'
 
@@ -31,8 +30,7 @@ export class IdeaCommandAPI {
     private readonly addTagUseCase: AddTagUseCase,
     private readonly removeTagUseCase: RemoveTagUseCase,
     private readonly archiveIdeaUseCase: ArchiveIdeaUseCase,
-    private readonly restoreIdeaUseCase: RestoreIdeaUseCase,
-    private readonly showIdeaUseCase: ShowIdeaUseCase
+    private readonly restoreIdeaUseCase: RestoreIdeaUseCase
   ) {}
 
   async addIdea(request: AddIdeaRequest): Promise<APIResponse<AddIdeaResponse>> {
@@ -42,16 +40,10 @@ export class IdeaCommandAPI {
       return convertDomainErrorToAPIError(result.error)
     }
 
-    const showResult = await this.showIdeaUseCase.execute(result.value)
-    if (showResult.isFailure) {
-      return convertDomainErrorToAPIError(showResult.error)
-    }
-
-    const idea = showResult.value
     return createSuccessResponse<AddIdeaResponse>({
-      ideaId: idea.id.value,
-      content: idea.content,
-      createdAt: idea.createdAt.toISOString(),
+      ideaId: result.value.value,
+      content: request.content,
+      createdAt: new Date().toISOString(),
     })
   }
 
@@ -64,28 +56,13 @@ export class IdeaCommandAPI {
         return convertDomainErrorToAPIError(result.error)
       }
 
-      const chunkId = result.value
-
-      const showResult = await this.showIdeaUseCase.execute(ideaId)
-      if (showResult.isFailure) {
-        return convertDomainErrorToAPIError(showResult.error)
-      }
-
-      const idea = showResult.value
-      const newChunk = idea.chunks.find((chunk) => chunk.id.value === chunkId.value)
-      if (!newChunk) {
-        return createErrorResponse({
-          code: ERROR_CODES.INTERNAL_ERROR,
-          message: 'Appended chunk not found for this idea',
-          details: { chunkId: chunkId.value },
-        })
-      }
+      const chunk = result.value
 
       return createSuccessResponse<AppendChunkResponse>({
-        ideaId: idea.id.value,
-        chunkId: newChunk.id.value,
-        content: newChunk.content,
-        createdAt: newChunk.createdAt.toISOString(),
+        ideaId: request.ideaId,
+        chunkId: chunk.id.value,
+        content: chunk.content,
+        createdAt: chunk.createdAt.toISOString(),
       })
     } catch (error) {
       return createErrorResponse({
@@ -128,23 +105,7 @@ export class IdeaCommandAPI {
   async removeTag(request: RemoveTagRequest): Promise<APIResponse<RemoveTagResponse>> {
     try {
       const ideaId = IdeaId.fromString(request.ideaId)
-
-      const showResult = await this.showIdeaUseCase.execute(ideaId)
-      if (showResult.isFailure) {
-        return convertDomainErrorToAPIError(showResult.error)
-      }
-
-      const idea = showResult.value
-      const existingTag = idea.tags.find((t) => t.name === request.tagName)
-      if (!existingTag) {
-        return createErrorResponse({
-          code: ERROR_CODES.NOT_FOUND,
-          message: `Tag "${request.tagName}" not found on this idea`,
-          details: { tagName: request.tagName },
-        })
-      }
-
-      const result = await this.removeTagUseCase.execute(ideaId, existingTag)
+      const result = await this.removeTagUseCase.execute(ideaId, request.tagName)
 
       if (result.isFailure) {
         return convertDomainErrorToAPIError(result.error)
@@ -171,15 +132,9 @@ export class IdeaCommandAPI {
         return convertDomainErrorToAPIError(result.error)
       }
 
-      const showResult = await this.showIdeaUseCase.execute(ideaId)
-      if (showResult.isFailure) {
-        return convertDomainErrorToAPIError(showResult.error)
-      }
-
-      const idea = showResult.value
       return createSuccessResponse<ArchiveIdeaResponse>({
         ideaId: request.ideaId,
-        archivedAt: idea.archivedAt!.toISOString(),
+        archivedAt: new Date().toISOString(),
       })
     } catch (error) {
       return createErrorResponse({

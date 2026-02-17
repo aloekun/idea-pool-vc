@@ -244,7 +244,7 @@ describe('SuggestActionUseCase', () => {
       expect(result.value.suggestion.content).toBeTruthy()
       expect(result.value.suggestion.reasoning).toBeTruthy()
       expect(result.value.usedAnalysisId).toBeTruthy()
-      expect(result.value.analysisId).toBeTruthy()
+      expect(result.value.newAnalysisId).toBeTruthy()
     }
   })
 
@@ -345,7 +345,7 @@ describe('RemoveTagUseCase', () => {
     const tag = Tag.create('Web', TagCategory.domain())
     await addTag.execute(addResult.value, tag)
 
-    const result = await removeTag.execute(addResult.value, tag)
+    const result = await removeTag.execute(addResult.value, tag.name)
     expect(result.isSuccess).toBe(true)
 
     const idea = await repository.findById(addResult.value)
@@ -355,7 +355,7 @@ describe('RemoveTagUseCase', () => {
   it('should fail when idea does not exist', async () => {
     const fakeId = IdeaId.generate()
     const tag = Tag.create('Web', TagCategory.domain())
-    const result = await removeTag.execute(fakeId, tag)
+    const result = await removeTag.execute(fakeId, tag.name)
 
     expect(result.isFailure).toBe(true)
     if (result.isFailure) {

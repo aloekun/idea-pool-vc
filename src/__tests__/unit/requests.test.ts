@@ -123,9 +123,8 @@ describe('SuggestActionRequest', () => {
     expect(() => new SuggestActionRequest('')).toThrow(ValidationError)
   })
 
-  it('should set analysisId to undefined for empty string', () => {
-    const request = new SuggestActionRequest('abc123', '')
-    expect(request.analysisId).toBeUndefined()
+  it('should throw ValidationError for empty analysisId string', () => {
+    expect(() => new SuggestActionRequest('abc123', '')).toThrow(ValidationError)
   })
 })
 

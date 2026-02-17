@@ -8,8 +8,8 @@ import { AddTagUseCase } from '../use-cases/add-tag-use-case.js'
 import { RemoveTagUseCase } from '../use-cases/remove-tag-use-case.js'
 import { ArchiveIdeaUseCase } from '../use-cases/archive-idea-use-case.js'
 import { RestoreIdeaUseCase } from '../use-cases/restore-idea-use-case.js'
-import { ShowIdeaUseCase } from '../use-cases/show-idea-use-case.js'
-import { ListIdeasUseCase } from '../use-cases/list-ideas-use-case.js'
+import { ShowIdeaUseCase } from '../usecases/show-idea-use-case.js'
+import { ListIdeasUseCase } from '../usecases/list-ideas-use-case.js'
 import { AnalyzeIdeaUseCase } from '../use-cases/analyze-idea-use-case.js'
 import { SuggestActionUseCase } from '../use-cases/suggest-action-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/mock-idea-repository.js'
@@ -31,15 +31,13 @@ describe('IdeaCommandAPI', () => {
 
   beforeEach(() => {
     repository = new MockIdeaRepository()
-    const showIdeaUseCase = new ShowIdeaUseCase(repository)
     commandAPI = new IdeaCommandAPI(
       new AddIdeaUseCase(repository),
       new AppendChunkUseCase(repository),
       new AddTagUseCase(repository),
       new RemoveTagUseCase(repository),
       new ArchiveIdeaUseCase(repository),
-      new RestoreIdeaUseCase(repository),
-      showIdeaUseCase
+      new RestoreIdeaUseCase(repository)
     )
   })
 
@@ -134,7 +132,7 @@ describe('IdeaCommandAPI', () => {
       }
     })
 
-    it('should return NOT_FOUND for nonexistent tag', async () => {
+    it('should return success for nonexistent tag (idempotent)', async () => {
       const addResponse = await commandAPI.addIdea(new AddIdeaRequest('Tag idea'))
       if (!addResponse.success) return
 
@@ -142,10 +140,7 @@ describe('IdeaCommandAPI', () => {
         new RemoveTagRequest(addResponse.data.ideaId, 'Nonexistent')
       )
 
-      expect(response.success).toBe(false)
-      if (!response.success) {
-        expect(response.error.code).toBe('NOT_FOUND')
-      }
+      expect(response.success).toBe(true)
     })
   })
 
@@ -190,19 +185,17 @@ describe('IdeaQueryAPI', () => {
 
   beforeEach(() => {
     repository = new MockIdeaRepository()
-    const showIdeaUseCase = new ShowIdeaUseCase(repository)
     commandAPI = new IdeaCommandAPI(
       new AddIdeaUseCase(repository),
       new AppendChunkUseCase(repository),
       new AddTagUseCase(repository),
       new RemoveTagUseCase(repository),
       new ArchiveIdeaUseCase(repository),
-      new RestoreIdeaUseCase(repository),
-      showIdeaUseCase
+      new RestoreIdeaUseCase(repository)
     )
     queryAPI = new IdeaQueryAPI(
       new ListIdeasUseCase(repository),
-      showIdeaUseCase
+      new ShowIdeaUseCase(repository)
     )
   })
 
@@ -245,9 +238,9 @@ describe('IdeaQueryAPI', () => {
 
       expect(response.success).toBe(true)
       if (response.success) {
-        expect(response.data.idea.content).toBe('Detailed idea')
-        expect(response.data.idea.chunks).toEqual([])
-        expect(response.data.idea.tags).toEqual([])
+        expect(response.data.content).toBe('Detailed idea')
+        expect(response.data.chunks).toEqual([])
+        expect(response.data.tags).toEqual([])
       }
     })
 
@@ -271,15 +264,13 @@ describe('IdeaAnalysisAPI', () => {
   beforeEach(() => {
     repository = new MockIdeaRepository()
     llmService = new MockLLMService()
-    const showIdeaUseCase = new ShowIdeaUseCase(repository)
     commandAPI = new IdeaCommandAPI(
       new AddIdeaUseCase(repository),
       new AppendChunkUseCase(repository),
       new AddTagUseCase(repository),
       new RemoveTagUseCase(repository),
       new ArchiveIdeaUseCase(repository),
-      new RestoreIdeaUseCase(repository),
-      showIdeaUseCase
+      new RestoreIdeaUseCase(repository)
     )
     analysisAPI = new IdeaAnalysisAPI(
       new AnalyzeIdeaUseCase(repository, llmService),

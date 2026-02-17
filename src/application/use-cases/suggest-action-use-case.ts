@@ -5,8 +5,8 @@ import type { IdeaId, AnalysisId, DomainError, Suggestion } from '../../domain/i
 import { type Result, success, failure } from '../../shared/result.js'
 
 export interface SuggestActionResult {
-  readonly analysisId: string
-  readonly usedAnalysisId: string
+  readonly newAnalysisId: AnalysisId
+  readonly usedAnalysisId: AnalysisId
   readonly suggestion: Suggestion
   readonly createdAt: Date
 }
@@ -50,8 +50,8 @@ export class SuggestActionUseCase {
       await this.repository.update(updated)
 
       return success({
-        analysisId: newAnalysis.id.value,
-        usedAnalysisId: usedAnalysis.id.value,
+        newAnalysisId: newAnalysis.id,
+        usedAnalysisId: usedAnalysis.id,
         suggestion,
         createdAt: newAnalysis.createdAt,
       })

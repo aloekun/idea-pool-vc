@@ -270,7 +270,7 @@ export class CLIController {
       const response = await this.queryAPI.showIdea(request)
 
       if (response.success) {
-        const { idea } = response.data
+        const idea = response.data
         this.printLine(`Idea: ${idea.id}`)
         this.printLine(`Content: ${idea.content}`)
         this.printLine(`Created: ${idea.createdAt}`)

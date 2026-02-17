@@ -18,9 +18,7 @@ export interface ListIdeasResponse {
   readonly total: number
 }
 
-export interface ShowIdeaResponse {
-  readonly idea: IdeaDetail
-}
+export type ShowIdeaResponse = IdeaDetail
 
 export interface AnalyzeIdeaResponse {
   readonly analysisId: string

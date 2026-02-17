@@ -3,7 +3,7 @@ import { ValidationError } from '../../domain/index.js'
 
 const suggestActionSchema = z.object({
   ideaId: z.string().trim().min(1, 'Idea ID is required'),
-  analysisId: z.string().trim().optional(),
+  analysisId: z.string().trim().min(1, 'Analysis ID cannot be empty').optional(),
 })
 
 export class SuggestActionRequest {
@@ -16,7 +16,7 @@ export class SuggestActionRequest {
       throw new ValidationError(result.error.issues[0].message)
     }
     this.ideaId = result.data.ideaId
-    this.analysisId = result.data.analysisId || undefined
+    this.analysisId = result.data.analysisId
     Object.freeze(this)
   }
 }
