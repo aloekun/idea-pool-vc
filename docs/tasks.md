@@ -120,7 +120,7 @@
 
 ### 担当者B: クエリ系機能
 
-- [ ] 2B.1 バリデーション付きRequestオブジェクトの実装
+- [x] 2B.1 バリデーション付きRequestオブジェクトの実装
   - ListIdeasRequestクラスの実装
     - limit オプション（デフォルト10）
     - tag フィルタオプション（複数指定可能）
@@ -128,10 +128,10 @@
   - ShowIdeaRequestクラス（バリデーション付き）
   - Requestオブジェクトのユニットテスト
 
-- [ ] 2B.2 Responseオブジェクトの定義
+- [x] 2B.2 Responseオブジェクトの定義
   - ListIdeasResponse, ShowIdeaResponseの定義
 
-- [ ] 2B.3 クエリ系ユースケースの実装
+- [x] 2B.3 クエリ系ユースケースの実装
   - ListIdeasUseCaseの実装（Result型を返す）
     - リミット対応
     - タグフィルタ対応
@@ -139,12 +139,12 @@
   - ShowIdeaUseCaseの実装（Result型を返す）
   - ユースケースのユニットテスト（モックリポジトリを使用）
 
-- [ ] 2B.4 IdeaQueryAPIの実装
+- [x] 2B.4 IdeaQueryAPIの実装
   - IdeaQueryAPIクラスの実装（listIdeas, showIdeaメソッド）
   - Result型からAPIResponseへの変換ロジック実装
   - IdeaQueryAPIのユニットテスト（モックユースケースを使用）
 
-- [ ] 2B.5 CLIコマンドハンドラーの実装（クエリ系）
+- [x] 2B.5 CLIコマンドハンドラーの実装（クエリ系）
   - handleListCommandの実装
     - --limit オプション
     - --tag オプション（複数指定可能）
@@ -152,7 +152,7 @@
   - handleShowCommandの実装
   - コマンドハンドラーのユニットテスト（モックAPIを使用）
 
-- [ ] 2B.6 プロパティベーステスト（クエリ系）
+- [x] 2B.6 プロパティベーステスト（クエリ系）
   - プロパティ2: アイデアIDの一意性
   - プロパティ7: 存在しないIDへの操作エラー
   - プロパティ8: アイデア一覧の完全性
@@ -162,30 +162,30 @@
 
 ### 担当者C: 分析系機能
 
-- [ ] 2C.1 バリデーション付きRequestオブジェクトの実装
+- [x] 2C.1 バリデーション付きRequestオブジェクトの実装
   - AnalyzeIdeaRequestクラス（バリデーション付き）
   - SuggestActionRequestクラス（バリデーション付き、analysisIdパラメータ対応）
   - Requestオブジェクトのユニットテスト
 
-- [ ] 2C.2 Responseオブジェクトの定義
+- [x] 2C.2 Responseオブジェクトの定義
   - AnalyzeIdeaResponse, SuggestActionResponseの定義
 
-- [ ] 2C.3 分析系ユースケースの実装
+- [x] 2C.3 分析系ユースケースの実装
   - AnalyzeIdeaUseCaseの実装（Result型を返す）
   - SuggestActionUseCaseの実装（analysisIdパラメータ対応、Result型を返す）
   - ユースケースのユニットテスト（モックリポジトリとモックLLMサービスを使用）
 
-- [ ] 2C.4 IdeaAnalysisAPIの実装
+- [x] 2C.4 IdeaAnalysisAPIの実装
   - IdeaAnalysisAPIクラスの実装（analyzeIdea, suggestActionメソッド）
   - Result型からAPIResponseへの変換ロジック実装
   - IdeaAnalysisAPIのユニットテスト（モックユースケースを使用）
 
-- [ ] 2C.5 CLIコマンドハンドラーの実装（分析系）
+- [x] 2C.5 CLIコマンドハンドラーの実装（分析系）
   - handleAnalyzeCommandの実装
   - handleSuggestCommandの実装（analysisIdパラメータ対応）
   - コマンドハンドラーのユニットテスト（モックAPIを使用）
 
-- [ ] 2C.6 プロパティベーステスト（分析系）
+- [x] 2C.6 プロパティベーステスト（分析系）
   - プロパティ12: LLMサービスの呼び出し
   - プロパティ13: タグ保存のラウンドトリップ
   - プロパティ14: LLM通信エラーの適切な処理

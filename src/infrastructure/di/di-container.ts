@@ -8,6 +8,8 @@ import { getAbsoluteDatabasePath } from '../config/config.js'
 import {
   AddIdeaUseCase,
   AppendChunkUseCase,
+  ListIdeasUseCase,
+  ShowIdeaUseCase,
   AnalyzeIdeaUseCase,
   SuggestActionUseCase,
   AddTagUseCase,
@@ -15,8 +17,6 @@ import {
   ArchiveIdeaUseCase,
   RestoreIdeaUseCase,
 } from '../../application/use-cases/index.js'
-import { ListIdeasUseCase } from '../../application/usecases/list-ideas-use-case.js'
-import { ShowIdeaUseCase } from '../../application/usecases/show-idea-use-case.js'
 import { IdeaCommandAPI } from '../../application/api/idea-command-api.js'
 import { IdeaQueryAPI } from '../../application/api/idea-query-api.js'
 import { IdeaAnalysisAPI } from '../../application/api/idea-analysis-api.js'

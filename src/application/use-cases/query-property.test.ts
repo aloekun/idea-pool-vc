@@ -12,9 +12,6 @@ import {
 } from '../../domain/index.js'
 import { isSuccess, isFailure } from '../../shared/result.js'
 
-// Property test tag format:
-// Feature: idea-classification-cli, Property {N}: {description}
-
 describe('Feature: idea-classification-cli, Query Property Tests', () => {
   let repository: MockIdeaRepository
   let listUseCase: ListIdeasUseCase
@@ -26,7 +23,6 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
     showUseCase = new ShowIdeaUseCase(repository)
   })
 
-  // Helper arbitraries
   const nonEmptyString = fc
     .string({ minLength: 1, maxLength: 200 })
     .filter((s) => s.trim().length > 0)
@@ -78,7 +74,6 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
           async (content) => {
             repository.clear()
 
-            // Save an idea, then try to show a different non-existent ID
             const idea = Idea.create(content)
             await repository.save(idea)
 
@@ -106,7 +101,7 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
   })
 
   describe('Property 8: Idea list completeness', () => {
-    it('list includes all idea IDs, creation dates, and content summaries (100 iterations)', async () => {
+    it('list includes all idea IDs, creation dates, and content (100 iterations)', async () => {
       await fc.assert(
         fc.asyncProperty(
           fc.array(nonEmptyString, { minLength: 1, maxLength: 10 }),
@@ -126,23 +121,15 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
 
             if (!isSuccess(result)) return false
 
-            const summaries = result.value
+            const entities = result.value
 
-            // Every saved idea should appear in the list
             for (const idea of ideas) {
-              const found = summaries.find((s) => s.id === idea.id.value)
+              const found = entities.find((e) => e.id.value === idea.id.value)
               if (!found) return false
 
-              // Check ID is present
-              if (found.id !== idea.id.value) return false
-
-              // Check createdAt is present
-              if (!found.createdAt) return false
-
-              // Check content summary is present (may be truncated)
+              if (!(found.createdAt instanceof Date)) return false
               if (!found.content) return false
 
-              // Content should start with the same characters as the idea
               const expectedStart = idea.content.substring(0, Math.min(100, idea.content.length))
               if (!found.content.startsWith(expectedStart)) return false
             }
@@ -186,11 +173,11 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
 
             if (!isSuccess(result)) return false
 
-            const summaries = result.value
-            for (let i = 1; i < summaries.length; i++) {
-              const prevDate = new Date(summaries[i - 1].createdAt).getTime()
-              const currDate = new Date(summaries[i].createdAt).getTime()
-              if (prevDate < currDate) return false
+            const entities = result.value
+            for (let i = 1; i < entities.length; i++) {
+              const prevTime = entities[i - 1].createdAt.getTime()
+              const currTime = entities[i].createdAt.getTime()
+              if (prevTime < currTime) return false
             }
 
             return true
@@ -227,22 +214,15 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
 
             if (!isSuccess(result)) return false
 
-            const detail = result.value
+            const entity = result.value
 
-            // Full content (not truncated)
-            if (detail.content !== content.trim()) return false
-
-            // All chunks present
-            if (detail.chunks.length !== idea.chunks.length) return false
+            if (entity.content !== content.trim()) return false
+            if (entity.chunks.length !== idea.chunks.length) return false
             for (let i = 0; i < idea.chunks.length; i++) {
-              if (detail.chunks[i].content !== idea.chunks[i].content) return false
+              if (entity.chunks[i].content !== idea.chunks[i].content) return false
             }
-
-            // All tags present
-            if (detail.tags.length !== idea.tags.length) return false
-
-            // Analyses array present (may be empty)
-            if (!Array.isArray(detail.analyses)) return false
+            if (entity.tags.length !== idea.tags.length) return false
+            if (!Array.isArray(entity.analyses)) return false
 
             return true
           }
@@ -253,7 +233,7 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
   })
 
   describe('Property 11: Chunk display with datetime information', () => {
-    it('every chunk in detail view has a valid datetime (100 iterations)', async () => {
+    it('every chunk in detail view has a valid Date (100 iterations)', async () => {
       await fc.assert(
         fc.asyncProperty(
           nonEmptyString,
@@ -271,15 +251,11 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
 
             if (!isSuccess(result)) return false
 
-            const detail = result.value
+            const entity = result.value
 
-            // Every chunk must have a createdAt timestamp
-            for (const chunk of detail.chunks) {
-              if (!chunk.createdAt) return false
-
-              // Verify it's a valid ISO date string
-              const date = new Date(chunk.createdAt)
-              if (isNaN(date.getTime())) return false
+            for (const chunk of entity.chunks) {
+              if (!(chunk.createdAt instanceof Date)) return false
+              if (isNaN(chunk.createdAt.getTime())) return false
             }
 
             return true
