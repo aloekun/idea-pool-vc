@@ -7,7 +7,6 @@ import { ShowIdeaRequest } from '../query/show-idea-request.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/index.js'
 import {
   Idea,
-  IdeaId,
   Tag,
   TagCategory,
   Analysis,

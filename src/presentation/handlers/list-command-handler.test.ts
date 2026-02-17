@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { ListCommandHandler } from './list-command-handler.js'
 import { IdeaQueryAPI } from '../../application/api/idea-query-api.js'
 import { ListIdeasUseCase } from '../../application/usecases/list-ideas-use-case.js'
 import { ShowIdeaUseCase } from '../../application/usecases/show-idea-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/index.js'
-import { Idea, IdeaId, Tag, TagCategory } from '../../domain/index.js'
+import { Idea, Tag, TagCategory } from '../../domain/index.js'
 
 describe('ListCommandHandler', () => {
   let repository: MockIdeaRepository
@@ -19,7 +19,7 @@ describe('ListCommandHandler', () => {
     api = new IdeaQueryAPI(listUseCase, showUseCase)
     output = []
     handler = new ListCommandHandler(api, (msg: string) => {
-      output.push(msg)
+      output = [...output, msg]
     })
   })
 

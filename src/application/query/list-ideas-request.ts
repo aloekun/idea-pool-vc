@@ -1,5 +1,17 @@
+import { z } from 'zod'
 import { ValidationError } from '../../domain/index.js'
 import type { ArchiveFilter } from '../../domain/index.js'
+
+const listIdeasOptionsSchema = z.object({
+  limit: z
+    .number()
+    .int({ message: 'limit must be a positive integer' })
+    .positive({ message: 'limit must be a positive integer' })
+    .default(10),
+  tags: z.array(z.string()).optional(),
+  archived: z.boolean().optional(),
+  all: z.boolean().optional(),
+})
 
 export interface ListIdeasRequestOptions {
   readonly limit?: number
@@ -14,16 +26,12 @@ export class ListIdeasRequest {
   readonly archiveFilter: ArchiveFilter
 
   constructor(options: ListIdeasRequestOptions = {}) {
-    const limit = options.limit ?? 10
+    const parsed = this.parseOptions(options)
 
-    if (!Number.isInteger(limit) || limit <= 0) {
-      throw new ValidationError('limit must be a positive integer')
-    }
+    this.limit = parsed.limit
 
-    this.limit = limit
-
-    if (options.tags) {
-      const trimmed = options.tags.map((t) => t.trim())
+    if (parsed.tags) {
+      const trimmed = parsed.tags.map((t) => t.trim())
       for (const tag of trimmed) {
         if (tag === '') {
           throw new ValidationError('Tag name cannot be empty')
@@ -34,14 +42,23 @@ export class ListIdeasRequest {
       this.tags = Object.freeze([])
     }
 
-    if (options.all) {
+    if (parsed.all) {
       this.archiveFilter = 'all'
-    } else if (options.archived) {
+    } else if (parsed.archived) {
       this.archiveFilter = 'archived'
     } else {
       this.archiveFilter = 'active'
     }
 
     Object.freeze(this)
+  }
+
+  private parseOptions(options: ListIdeasRequestOptions) {
+    const result = listIdeasOptionsSchema.safeParse(options)
+    if (!result.success) {
+      const firstIssue = result.error.issues[0]
+      throw new ValidationError(firstIssue.message)
+    }
+    return result.data
   }
 }

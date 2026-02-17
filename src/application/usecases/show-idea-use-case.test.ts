@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ShowIdeaUseCase } from './show-idea-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/index.js'
 import {
@@ -9,6 +9,7 @@ import {
   Analysis,
   Suggestion,
   NotFoundError,
+  DatabaseError,
 } from '../../domain/index.js'
 import { isSuccess, isFailure } from '../../shared/result.js'
 
@@ -138,6 +139,20 @@ describe('ShowIdeaUseCase', () => {
       if (isFailure(result)) {
         expect(result.error).toBeInstanceOf(NotFoundError)
         expect(result.error.message).toContain(nonExistentId.value)
+      }
+    })
+
+    it('should return DatabaseError when repository throws', async () => {
+      const ideaId = IdeaId.generate()
+      vi.spyOn(repository, 'findById').mockRejectedValueOnce(
+        new Error('Connection failed')
+      )
+
+      const result = await useCase.execute(ideaId)
+
+      expect(isFailure(result)).toBe(true)
+      if (isFailure(result)) {
+        expect(result.error).toBeInstanceOf(DatabaseError)
       }
     })
   })

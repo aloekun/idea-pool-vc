@@ -25,7 +25,7 @@ describe('ShowCommandHandler', () => {
     api = new IdeaQueryAPI(listUseCase, showUseCase)
     output = []
     handler = new ShowCommandHandler(api, (msg: string) => {
-      output.push(msg)
+      output = [...output, msg]
     })
   })
 

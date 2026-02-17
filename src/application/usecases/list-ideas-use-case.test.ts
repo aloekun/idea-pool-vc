@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { ListIdeasUseCase } from './list-ideas-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/index.js'
 import { Idea, IdeaId, Tag, TagCategory } from '../../domain/index.js'
-import { isSuccess, isFailure } from '../../shared/result.js'
+import { isSuccess } from '../../shared/result.js'
 
 describe('ListIdeasUseCase', () => {
   let repository: MockIdeaRepository

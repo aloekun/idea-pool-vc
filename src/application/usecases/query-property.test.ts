@@ -8,8 +8,6 @@ import {
   IdeaId,
   Tag,
   TagCategory,
-  Analysis,
-  Suggestion,
   NotFoundError,
 } from '../../domain/index.js'
 import { isSuccess, isFailure } from '../../shared/result.js'
@@ -94,21 +92,16 @@ describe('Feature: idea-classification-cli, Query Property Tests', () => {
       )
     })
 
-    it('show on completely empty repository returns NotFoundError (100 iterations)', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          fc.constant(null),
-          async () => {
-            repository.clear()
+    it('show on completely empty repository returns NotFoundError', async () => {
+      repository.clear()
 
-            const randomId = IdeaId.generate()
-            const result = await showUseCase.execute(randomId)
+      const randomId = IdeaId.generate()
+      const result = await showUseCase.execute(randomId)
 
-            return isFailure(result) && result.error instanceof NotFoundError
-          }
-        ),
-        { numRuns: 100 }
-      )
+      expect(isFailure(result)).toBe(true)
+      if (isFailure(result)) {
+        expect(result.error).toBeInstanceOf(NotFoundError)
+      }
     })
   })
 

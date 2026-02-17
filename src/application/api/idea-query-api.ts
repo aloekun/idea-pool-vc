@@ -41,17 +41,29 @@ export class IdeaQueryAPI {
   async showIdea(
     request: ShowIdeaRequest
   ): Promise<APIResponse<ShowIdeaResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.showIdeaUseCase.execute(ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.showIdeaUseCase.execute(ideaId)
 
-    if (result.isSuccess) {
+      if (result.isSuccess) {
+        return {
+          success: true,
+          data: result.value,
+        }
+      }
+
+      return this.convertError(result.error)
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Invalid idea ID format'
       return {
-        success: true,
-        data: result.value,
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message,
+        },
       }
     }
-
-    return this.convertError(result.error)
   }
 
   private convertError<T>(error: DomainError): APIResponse<T> {
