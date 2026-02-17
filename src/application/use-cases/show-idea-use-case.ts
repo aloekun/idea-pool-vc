@@ -1,27 +1,23 @@
 import type { IIdeaRepository } from '../../domain/interfaces/index.js'
-import { NotFoundError, DatabaseError } from '../../domain/index.js'
-import type { IdeaId, Tag, DomainError } from '../../domain/index.js'
+import { IdeaId, NotFoundError, DatabaseError } from '../../domain/index.js'
+import type { Idea, DomainError } from '../../domain/index.js'
 import { type Result, success, failure } from '../../shared/result.js'
 
-export class RemoveTagUseCase {
+export class ShowIdeaUseCase {
   constructor(private readonly repository: IIdeaRepository) {}
 
-  async execute(ideaId: IdeaId, tag: Tag): Promise<Result<void, DomainError>> {
+  async execute(ideaId: IdeaId): Promise<Result<Idea, DomainError>> {
     try {
       const idea = await this.repository.findById(ideaId)
       if (!idea) {
         return failure(new NotFoundError('Idea not found', ideaId.value))
       }
-
-      const updated = idea.removeTag(tag)
-      await this.repository.update(updated)
-
-      return success(undefined)
+      return success(idea)
     } catch (error) {
       if (error instanceof DatabaseError) {
         return failure(error)
       }
-      return failure(new DatabaseError('Failed to remove tag'))
+      return failure(new DatabaseError('Failed to show idea'))
     }
   }
 }

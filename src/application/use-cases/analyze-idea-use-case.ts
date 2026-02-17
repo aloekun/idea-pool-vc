@@ -1,9 +1,8 @@
 import type { IIdeaRepository } from '../../domain/interfaces/index.js'
 import type { ILLMService } from '../../domain/interfaces/index.js'
-import type { IdeaId } from '../../domain/index.js'
-import { Analysis, NotFoundError, DomainError } from '../../domain/index.js'
-import type { Result } from '../../shared/index.js'
-import { success, failure, handleUseCaseError } from '../../shared/index.js'
+import { NotFoundError, LLMServiceError, DatabaseError, ValidationError, Analysis } from '../../domain/index.js'
+import type { IdeaId, DomainError } from '../../domain/index.js'
+import { type Result, success, failure } from '../../shared/result.js'
 
 export class AnalyzeIdeaUseCase {
   constructor(
@@ -15,24 +14,26 @@ export class AnalyzeIdeaUseCase {
     try {
       const idea = await this.repository.findById(ideaId)
       if (!idea) {
-        return failure(
-          new NotFoundError('Idea not found', ideaId.value)
-        )
+        return failure(new NotFoundError('Idea not found', ideaId.value))
       }
 
-      const generatedTags = await this.llmService.generateTags(
-        idea.content,
-        idea.chunks
-      )
-
-      const analysis = Analysis.createWithTags(generatedTags)
-
-      const updatedIdea = idea.addAnalysis(analysis)
-      await this.repository.update(updatedIdea)
+      const tags = await this.llmService.generateTags(idea.content, idea.chunks)
+      const analysis = Analysis.createWithTags(tags)
+      const updated = idea.addAnalysis(analysis)
+      await this.repository.update(updated)
 
       return success(analysis)
     } catch (error) {
-      return handleUseCaseError(error)
+      if (error instanceof ValidationError) {
+        return failure(error)
+      }
+      if (error instanceof LLMServiceError) {
+        return failure(error)
+      }
+      if (error instanceof DatabaseError) {
+        return failure(error)
+      }
+      return failure(new DatabaseError('Failed to analyze idea'))
     }
   }
 }

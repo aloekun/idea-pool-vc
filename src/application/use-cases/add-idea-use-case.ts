@@ -1,9 +1,7 @@
-import type { IIdeaRepository } from '../../domain/index.js'
-import { Idea, ValidationError, DatabaseError } from '../../domain/index.js'
-import type { IdeaId } from '../../domain/index.js'
+import type { IIdeaRepository } from '../../domain/interfaces/index.js'
+import { Idea, IdeaId, ValidationError, DatabaseError } from '../../domain/index.js'
 import type { DomainError } from '../../domain/index.js'
-import type { Result } from '../../shared/index.js'
-import { success, failure } from '../../shared/index.js'
+import { type Result, success, failure } from '../../shared/result.js'
 
 export class AddIdeaUseCase {
   constructor(private readonly repository: IIdeaRepository) {}
@@ -19,9 +17,6 @@ export class AddIdeaUseCase {
       }
       if (error instanceof DatabaseError) {
         return failure(error)
-      }
-      if (error instanceof Error && error.message.includes('cannot be empty')) {
-        return failure(new ValidationError(error.message))
       }
       return failure(new DatabaseError('Failed to save idea'))
     }

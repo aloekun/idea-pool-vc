@@ -1,5 +1,8 @@
 export { AddIdeaUseCase } from './add-idea-use-case.js'
 export { AppendChunkUseCase } from './append-chunk-use-case.js'
+export { ListIdeasUseCase } from './list-ideas-use-case.js'
+export type { ListIdeasParams } from './list-ideas-use-case.js'
+export { ShowIdeaUseCase } from './show-idea-use-case.js'
 export { AddTagUseCase } from './add-tag-use-case.js'
 export { RemoveTagUseCase } from './remove-tag-use-case.js'
 export { ArchiveIdeaUseCase } from './archive-idea-use-case.js'

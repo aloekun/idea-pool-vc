@@ -1,6 +1,6 @@
 import { ValidationError } from '../../domain/index.js'
 
-export class AnalyzeIdeaRequest {
+export class RestoreIdeaRequest {
   readonly ideaId: string
 
   constructor(ideaId: string) {
