@@ -1,4 +1,11 @@
+import { z } from 'zod'
 import { ValidationError } from '../../domain/index.js'
+
+const addTagSchema = z.object({
+  ideaId: z.string().trim().min(1, 'Idea ID is required'),
+  tagName: z.string().trim().min(1, 'Tag name is required'),
+  tagCategory: z.string().trim().min(1, 'Tag category is required'),
+})
 
 export class AddTagRequest {
   readonly ideaId: string
@@ -6,18 +13,13 @@ export class AddTagRequest {
   readonly tagCategory: string
 
   constructor(ideaId: string, tagName: string, tagCategory: string) {
-    if (!ideaId || ideaId.trim() === '') {
-      throw new ValidationError('Idea ID is required')
+    const result = addTagSchema.safeParse({ ideaId, tagName, tagCategory })
+    if (!result.success) {
+      throw new ValidationError(result.error.issues[0].message)
     }
-    if (!tagName || tagName.trim() === '') {
-      throw new ValidationError('Tag name is required')
-    }
-    if (!tagCategory || tagCategory.trim() === '') {
-      throw new ValidationError('Tag category is required')
-    }
-    this.ideaId = ideaId.trim()
-    this.tagName = tagName.trim()
-    this.tagCategory = tagCategory.trim()
+    this.ideaId = result.data.ideaId
+    this.tagName = result.data.tagName
+    this.tagCategory = result.data.tagCategory
     Object.freeze(this)
   }
 }

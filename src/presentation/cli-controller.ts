@@ -176,6 +176,10 @@ export class CLIController {
     } catch (error) {
       if (error instanceof ValidationError) {
         this.printError(error.message)
+      } else {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+        this.printError(message)
+        process.exitCode = 1
       }
     }
   }
@@ -246,13 +250,9 @@ export class CLIController {
             `Created: ${idea.createdAt}`,
             `Tags: ${idea.tagCount}`,
             `Chunks: ${idea.chunkCount}`,
+            ...(idea.hasAnalysis ? ['Analyzed'] : []),
+            ...(idea.archivedAt ? ['Archived'] : []),
           ]
-          if (idea.hasAnalysis) {
-            parts.push('Analyzed')
-          }
-          if (idea.archivedAt) {
-            parts.push('Archived')
-          }
           this.printLine(`  ${parts.join(' | ')}`)
           this.printLine('')
         }

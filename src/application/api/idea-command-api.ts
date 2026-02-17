@@ -56,27 +56,43 @@ export class IdeaCommandAPI {
   }
 
   async appendChunk(request: AppendChunkRequest): Promise<APIResponse<AppendChunkResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.appendChunkUseCase.execute(ideaId, request.content)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.appendChunkUseCase.execute(ideaId, request.content)
 
-    if (result.isFailure) {
-      return convertDomainErrorToAPIError(result.error)
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
+      }
+
+      const chunkId = result.value
+
+      const showResult = await this.showIdeaUseCase.execute(ideaId)
+      if (showResult.isFailure) {
+        return convertDomainErrorToAPIError(showResult.error)
+      }
+
+      const idea = showResult.value
+      const newChunk = idea.chunks.find((chunk) => chunk.id.value === chunkId.value)
+      if (!newChunk) {
+        return createErrorResponse({
+          code: ERROR_CODES.INTERNAL_ERROR,
+          message: 'Appended chunk not found for this idea',
+          details: { chunkId: chunkId.value },
+        })
+      }
+
+      return createSuccessResponse<AppendChunkResponse>({
+        ideaId: idea.id.value,
+        chunkId: newChunk.id.value,
+        content: newChunk.content,
+        createdAt: newChunk.createdAt.toISOString(),
+      })
+    } catch (error) {
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
-
-    const showResult = await this.showIdeaUseCase.execute(ideaId)
-    if (showResult.isFailure) {
-      return convertDomainErrorToAPIError(showResult.error)
-    }
-
-    const idea = showResult.value
-    const newChunk = idea.chunks[idea.chunks.length - 1]
-
-    return createSuccessResponse<AppendChunkResponse>({
-      ideaId: idea.id.value,
-      chunkId: newChunk.id.value,
-      content: newChunk.content,
-      createdAt: newChunk.createdAt.toISOString(),
-    })
   }
 
   async addTag(request: AddTagRequest): Promise<APIResponse<AddTagResponse>> {
@@ -110,65 +126,86 @@ export class IdeaCommandAPI {
   }
 
   async removeTag(request: RemoveTagRequest): Promise<APIResponse<RemoveTagResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
 
-    const showResult = await this.showIdeaUseCase.execute(ideaId)
-    if (showResult.isFailure) {
-      return convertDomainErrorToAPIError(showResult.error)
-    }
+      const showResult = await this.showIdeaUseCase.execute(ideaId)
+      if (showResult.isFailure) {
+        return convertDomainErrorToAPIError(showResult.error)
+      }
 
-    const idea = showResult.value
-    const existingTag = idea.tags.find((t) => t.name === request.tagName)
-    if (!existingTag) {
+      const idea = showResult.value
+      const existingTag = idea.tags.find((t) => t.name === request.tagName)
+      if (!existingTag) {
+        return createErrorResponse({
+          code: ERROR_CODES.NOT_FOUND,
+          message: `Tag "${request.tagName}" not found on this idea`,
+          details: { tagName: request.tagName },
+        })
+      }
+
+      const result = await this.removeTagUseCase.execute(ideaId, existingTag)
+
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
+      }
+
+      return createSuccessResponse<RemoveTagResponse>({
+        ideaId: request.ideaId,
+        removedTagName: request.tagName,
+      })
+    } catch (error) {
       return createErrorResponse({
-        code: ERROR_CODES.NOT_FOUND,
-        message: `Tag "${request.tagName}" not found on this idea`,
-        details: { tagName: request.tagName },
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
       })
     }
-
-    const result = await this.removeTagUseCase.execute(ideaId, existingTag)
-
-    if (result.isFailure) {
-      return convertDomainErrorToAPIError(result.error)
-    }
-
-    return createSuccessResponse<RemoveTagResponse>({
-      ideaId: request.ideaId,
-      removedTagName: request.tagName,
-    })
   }
 
   async archiveIdea(request: ArchiveIdeaRequest): Promise<APIResponse<ArchiveIdeaResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.archiveIdeaUseCase.execute(ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.archiveIdeaUseCase.execute(ideaId)
 
-    if (result.isFailure) {
-      return convertDomainErrorToAPIError(result.error)
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
+      }
+
+      const showResult = await this.showIdeaUseCase.execute(ideaId)
+      if (showResult.isFailure) {
+        return convertDomainErrorToAPIError(showResult.error)
+      }
+
+      const idea = showResult.value
+      return createSuccessResponse<ArchiveIdeaResponse>({
+        ideaId: request.ideaId,
+        archivedAt: idea.archivedAt!.toISOString(),
+      })
+    } catch (error) {
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
-
-    const showResult = await this.showIdeaUseCase.execute(ideaId)
-    if (showResult.isFailure) {
-      return convertDomainErrorToAPIError(showResult.error)
-    }
-
-    const idea = showResult.value
-    return createSuccessResponse<ArchiveIdeaResponse>({
-      ideaId: request.ideaId,
-      archivedAt: idea.archivedAt!.toISOString(),
-    })
   }
 
   async restoreIdea(request: RestoreIdeaRequest): Promise<APIResponse<RestoreIdeaResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.restoreIdeaUseCase.execute(ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.restoreIdeaUseCase.execute(ideaId)
 
-    if (result.isFailure) {
-      return convertDomainErrorToAPIError(result.error)
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
+      }
+
+      return createSuccessResponse<RestoreIdeaResponse>({
+        ideaId: request.ideaId,
+      })
+    } catch (error) {
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
-
-    return createSuccessResponse<RestoreIdeaResponse>({
-      ideaId: request.ideaId,
-    })
   }
 }

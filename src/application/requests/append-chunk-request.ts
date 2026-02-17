@@ -1,18 +1,22 @@
+import { z } from 'zod'
 import { ValidationError } from '../../domain/index.js'
+
+const appendChunkSchema = z.object({
+  ideaId: z.string().trim().min(1, 'Idea ID is required'),
+  content: z.string().trim().min(1, 'Chunk content is required'),
+})
 
 export class AppendChunkRequest {
   readonly ideaId: string
   readonly content: string
 
   constructor(ideaId: string, content: string) {
-    if (!ideaId || ideaId.trim() === '') {
-      throw new ValidationError('Idea ID is required')
+    const result = appendChunkSchema.safeParse({ ideaId, content })
+    if (!result.success) {
+      throw new ValidationError(result.error.issues[0].message)
     }
-    if (!content || content.trim() === '') {
-      throw new ValidationError('Chunk content is required')
-    }
-    this.ideaId = ideaId.trim()
-    this.content = content.trim()
+    this.ideaId = result.data.ideaId
+    this.content = result.data.content
     Object.freeze(this)
   }
 }

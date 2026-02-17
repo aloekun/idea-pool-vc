@@ -1,5 +1,5 @@
 import type { APIResponse } from '../dto/index.js'
-import { createSuccessResponse, toIdeaSummary, toIdeaDetail } from '../dto/index.js'
+import { createSuccessResponse, createErrorResponse, ERROR_CODES, toIdeaSummary, toIdeaDetail } from '../dto/index.js'
 import type { ListIdeasResponse, ShowIdeaResponse } from '../responses/index.js'
 import type { ListIdeasRequest } from '../requests/list-ideas-request.js'
 import type { ShowIdeaRequest } from '../requests/show-idea-request.js'
@@ -15,34 +15,48 @@ export class IdeaQueryAPI {
   ) {}
 
   async listIdeas(request: ListIdeasRequest): Promise<APIResponse<ListIdeasResponse>> {
-    const result = await this.listIdeasUseCase.execute({
-      limit: request.limit,
-      tags: [...request.tags],
-      includeArchived: request.includeArchived,
-      archivedOnly: request.archivedOnly,
-    })
+    try {
+      const result = await this.listIdeasUseCase.execute({
+        limit: request.limit,
+        tags: [...request.tags],
+        includeArchived: request.includeArchived,
+        archivedOnly: request.archivedOnly,
+      })
 
-    if (result.isFailure) {
-      return convertDomainErrorToAPIError(result.error)
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
+      }
+
+      const ideas = result.value
+      return createSuccessResponse<ListIdeasResponse>({
+        ideas: ideas.map(toIdeaSummary),
+        total: ideas.length,
+      })
+    } catch (error) {
+      return createErrorResponse({
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: error instanceof Error ? error.message : 'An unexpected error occurred',
+      })
     }
-
-    const ideas = result.value
-    return createSuccessResponse<ListIdeasResponse>({
-      ideas: ideas.map(toIdeaSummary),
-      total: ideas.length,
-    })
   }
 
   async showIdea(request: ShowIdeaRequest): Promise<APIResponse<ShowIdeaResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.showIdeaUseCase.execute(ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.showIdeaUseCase.execute(ideaId)
 
-    if (result.isFailure) {
-      return convertDomainErrorToAPIError(result.error)
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
+      }
+
+      return createSuccessResponse<ShowIdeaResponse>({
+        idea: toIdeaDetail(result.value),
+      })
+    } catch (error) {
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
-
-    return createSuccessResponse<ShowIdeaResponse>({
-      idea: toIdeaDetail(result.value),
-    })
   }
 }

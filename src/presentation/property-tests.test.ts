@@ -196,9 +196,9 @@ describe('Feature: idea-classification-cli, Property 21: Invalid command error h
       fc.asyncProperty(
         fc.stringOf(fc.constantFrom(...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), { minLength: 10, maxLength: 26 }),
         async (fakeId) => {
-          const errOutput: string[] = []
+          let errOutput: string[] = []
           const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation((str) => {
-            errOutput.push(String(str))
+            errOutput = [...errOutput, String(str)]
             return true
           })
           const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
@@ -229,9 +229,9 @@ describe('Feature: idea-classification-cli, Property 21: Invalid command error h
       fc.asyncProperty(
         fc.stringOf(fc.constantFrom(' ', '\t', '\n'), { minLength: 0, maxLength: 10 }),
         async (emptyContent) => {
-          const errOutput: string[] = []
+          let errOutput: string[] = []
           const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation((str) => {
-            errOutput.push(String(str))
+            errOutput = [...errOutput, String(str)]
             return true
           })
           const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)

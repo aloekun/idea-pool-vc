@@ -32,9 +32,16 @@ export class DIContainer {
   getOrCreateDatabaseConnection(): DatabaseConnection {
     if (!this.dbConnection) {
       const dbPath = getAbsoluteDatabasePath(this.config)
-      this.dbConnection = new DatabaseConnection(dbPath)
-      this.dbConnection.connect()
-      this.dbConnection.initialize()
+      const connection = new DatabaseConnection(dbPath)
+      try {
+        connection.connect()
+        connection.initialize()
+        this.dbConnection = connection
+      } catch (error) {
+        connection.close()
+        this.dbConnection = null
+        throw error
+      }
     }
     return this.dbConnection
   }

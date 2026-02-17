@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { CLIController } from './cli-controller.js'
 import { IdeaCommandAPI, IdeaQueryAPI, IdeaAnalysisAPI } from '../application/api/index.js'
 import {
@@ -56,13 +56,17 @@ describe('CLIController', () => {
     output = []
     errors = []
     vi.spyOn(process.stdout, 'write').mockImplementation((str) => {
-      output.push(String(str))
+      output = [...output, String(str)]
       return true
     })
     vi.spyOn(process.stderr, 'write').mockImplementation((str) => {
-      errors.push(String(str))
+      errors = [...errors, String(str)]
       return true
     })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe('add command', () => {

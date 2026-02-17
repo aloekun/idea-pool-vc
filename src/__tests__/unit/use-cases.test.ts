@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { AddIdeaUseCase } from './add-idea-use-case.js'
-import { AppendChunkUseCase } from './append-chunk-use-case.js'
-import { ListIdeasUseCase } from './list-ideas-use-case.js'
-import { ShowIdeaUseCase } from './show-idea-use-case.js'
-import { AnalyzeIdeaUseCase } from './analyze-idea-use-case.js'
-import { SuggestActionUseCase } from './suggest-action-use-case.js'
-import { AddTagUseCase } from './add-tag-use-case.js'
-import { RemoveTagUseCase } from './remove-tag-use-case.js'
-import { ArchiveIdeaUseCase } from './archive-idea-use-case.js'
-import { RestoreIdeaUseCase } from './restore-idea-use-case.js'
+import { AddIdeaUseCase } from '../../application/use-cases/add-idea-use-case.js'
+import { AppendChunkUseCase } from '../../application/use-cases/append-chunk-use-case.js'
+import { ListIdeasUseCase } from '../../application/use-cases/list-ideas-use-case.js'
+import { ShowIdeaUseCase } from '../../application/use-cases/show-idea-use-case.js'
+import { AnalyzeIdeaUseCase } from '../../application/use-cases/analyze-idea-use-case.js'
+import { SuggestActionUseCase } from '../../application/use-cases/suggest-action-use-case.js'
+import { AddTagUseCase } from '../../application/use-cases/add-tag-use-case.js'
+import { RemoveTagUseCase } from '../../application/use-cases/remove-tag-use-case.js'
+import { ArchiveIdeaUseCase } from '../../application/use-cases/archive-idea-use-case.js'
+import { RestoreIdeaUseCase } from '../../application/use-cases/restore-idea-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/mock-idea-repository.js'
 import { MockLLMService } from '../../infrastructure/testing/mock-llm-service.js'
-import { IdeaId, Tag, TagCategory } from '../../domain/index.js'
+import { IdeaId, AnalysisId, Tag, TagCategory } from '../../domain/index.js'
 
 describe('AppendChunkUseCase', () => {
   let repository: MockIdeaRepository
@@ -264,7 +264,7 @@ describe('SuggestActionUseCase', () => {
     if (!addResult.isSuccess) return
 
     await analyzeIdea.execute(addResult.value)
-    const fakeAnalysisId = { value: 'nonexistent', equals: () => false } as any
+    const fakeAnalysisId = AnalysisId.fromString('nonexistent-analysis-id')
     const result = await suggestAction.execute(addResult.value, fakeAnalysisId)
 
     expect(result.isFailure).toBe(true)
