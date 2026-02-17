@@ -24,7 +24,7 @@ describe('Command Handlers', () => {
 
   function createOutputWriter(): (message: string) => void {
     return (message: string) => {
-      output.push(message)
+      output = [...output, message]
     }
   }
 

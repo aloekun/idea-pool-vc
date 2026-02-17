@@ -17,7 +17,8 @@ import type { RemoveTagResponse } from '../responses/command-responses.js'
 import type { ArchiveIdeaResponse } from '../responses/command-responses.js'
 import type { RestoreIdeaResponse } from '../responses/command-responses.js'
 import type { APIResponse } from '../dto/api-response.js'
-import { IdeaId, Tag, TagCategory } from '../../domain/index.js'
+import { ERROR_CODES } from '../dto/api-response.js'
+import { DomainError, IdeaId, Tag, TagCategory } from '../../domain/index.js'
 import { convertDomainErrorToAPIError } from './error-converter.js'
 
 export class IdeaCommandAPI {
@@ -47,89 +48,154 @@ export class IdeaCommandAPI {
   }
 
   async appendChunk(request: AppendChunkRequest): Promise<APIResponse<AppendChunkResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.appendChunkUseCase.execute(ideaId, request.content)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.appendChunkUseCase.execute(ideaId, request.content)
 
-    if (result.isSuccess) {
-      const chunk = result.value
+      if (result.isSuccess) {
+        const chunk = result.value
+        return {
+          success: true,
+          data: {
+            ideaId: request.ideaId,
+            chunkId: chunk.id.value,
+            content: chunk.content,
+            createdAt: chunk.createdAt.toISOString(),
+          },
+        }
+      }
+      return convertDomainErrorToAPIError(result.error)
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return convertDomainErrorToAPIError(error)
+      }
       return {
-        success: true,
-        data: {
-          ideaId: request.ideaId,
-          chunkId: chunk.id.value,
-          content: chunk.content,
-          createdAt: chunk.createdAt.toISOString(),
+        success: false,
+        error: {
+          code: ERROR_CODES.INTERNAL_ERROR,
+          message: 'An unexpected error occurred',
         },
       }
     }
-    return convertDomainErrorToAPIError(result.error)
   }
 
   async addTag(request: AddTagRequest): Promise<APIResponse<AddTagResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const category = TagCategory.fromString(request.tagCategory)
-    const tag = Tag.create(request.tagName, category)
-    const result = await this.addTagUseCase.execute(ideaId, tag)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const category = TagCategory.fromString(request.tagCategory)
+      const tag = Tag.create(request.tagName, category)
+      const result = await this.addTagUseCase.execute(ideaId, tag)
 
-    if (result.isSuccess) {
-      return {
-        success: true,
-        data: {
-          ideaId: request.ideaId,
-          tag: {
-            name: request.tagName,
-            category: request.tagCategory,
+      if (result.isSuccess) {
+        return {
+          success: true,
+          data: {
+            ideaId: request.ideaId,
+            tag: {
+              name: request.tagName,
+              category: request.tagCategory,
+            },
           },
+        }
+      }
+      return convertDomainErrorToAPIError(result.error)
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return convertDomainErrorToAPIError(error)
+      }
+      return {
+        success: false,
+        error: {
+          code: ERROR_CODES.INTERNAL_ERROR,
+          message: 'An unexpected error occurred',
         },
       }
     }
-    return convertDomainErrorToAPIError(result.error)
   }
 
   async removeTag(request: RemoveTagRequest): Promise<APIResponse<RemoveTagResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.removeTagUseCase.execute(ideaId, request.tagName)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.removeTagUseCase.execute(ideaId, request.tagName)
 
-    if (result.isSuccess) {
+      if (result.isSuccess) {
+        return {
+          success: true,
+          data: {
+            ideaId: request.ideaId,
+            removedTagName: request.tagName,
+          },
+        }
+      }
+      return convertDomainErrorToAPIError(result.error)
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return convertDomainErrorToAPIError(error)
+      }
       return {
-        success: true,
-        data: {
-          ideaId: request.ideaId,
-          removedTagName: request.tagName,
+        success: false,
+        error: {
+          code: ERROR_CODES.INTERNAL_ERROR,
+          message: 'An unexpected error occurred',
         },
       }
     }
-    return convertDomainErrorToAPIError(result.error)
   }
 
   async archiveIdea(request: ArchiveIdeaRequest): Promise<APIResponse<ArchiveIdeaResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.archiveIdeaUseCase.execute(ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.archiveIdeaUseCase.execute(ideaId)
 
-    if (result.isSuccess) {
+      if (result.isSuccess) {
+        return {
+          success: true,
+          data: {
+            ideaId: request.ideaId,
+            archivedAt: new Date().toISOString(),
+          },
+        }
+      }
+      return convertDomainErrorToAPIError(result.error)
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return convertDomainErrorToAPIError(error)
+      }
       return {
-        success: true,
-        data: {
-          ideaId: request.ideaId,
-          archivedAt: new Date().toISOString(),
+        success: false,
+        error: {
+          code: ERROR_CODES.INTERNAL_ERROR,
+          message: 'An unexpected error occurred',
         },
       }
     }
-    return convertDomainErrorToAPIError(result.error)
   }
 
   async restoreIdea(request: RestoreIdeaRequest): Promise<APIResponse<RestoreIdeaResponse>> {
-    const ideaId = IdeaId.fromString(request.ideaId)
-    const result = await this.restoreIdeaUseCase.execute(ideaId)
+    try {
+      const ideaId = IdeaId.fromString(request.ideaId)
+      const result = await this.restoreIdeaUseCase.execute(ideaId)
 
-    if (result.isSuccess) {
+      if (result.isSuccess) {
+        return {
+          success: true,
+          data: {
+            ideaId: request.ideaId,
+          },
+        }
+      }
+      return convertDomainErrorToAPIError(result.error)
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return convertDomainErrorToAPIError(error)
+      }
       return {
-        success: true,
-        data: {
-          ideaId: request.ideaId,
+        success: false,
+        error: {
+          code: ERROR_CODES.INTERNAL_ERROR,
+          message: 'An unexpected error occurred',
         },
       }
     }
-    return convertDomainErrorToAPIError(result.error)
   }
 }

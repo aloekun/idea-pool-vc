@@ -10,6 +10,8 @@ import { MockIdeaRepository } from '../../infrastructure/testing/mock-idea-repos
 import { AddIdeaRequest, AppendChunkRequest, AddTagRequest, RemoveTagRequest, ArchiveIdeaRequest, RestoreIdeaRequest } from '../requests/command-requests.js'
 import { Idea, Tag, TagCategory } from '../../domain/index.js'
 
+// Unit tests using in-memory MockIdeaRepository.
+// See idea-command-api.integration.test.ts for SQLite-backed integration tests.
 describe('IdeaCommandAPI', () => {
   let repository: MockIdeaRepository
   let api: IdeaCommandAPI

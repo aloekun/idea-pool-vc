@@ -71,7 +71,8 @@ describe('Feature: idea-classification-cli, Property 4: Empty string input rejec
     const emptyOrWhitespace = fc.oneof(
       fc.constant(''),
       fc.stringOf(fc.constant(' ')),
-      fc.stringOf(fc.constant('\t'))
+      fc.stringOf(fc.constant('\t')),
+      fc.stringOf(fc.constant('\n'))
     )
 
     await fc.assert(
