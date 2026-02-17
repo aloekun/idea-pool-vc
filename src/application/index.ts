@@ -23,7 +23,7 @@ export {
   toIdeaDetail,
 } from './dto/index.js'
 
-// Requests
+// Requests (Command)
 export {
   AddIdeaRequest,
   AppendChunkRequest,
@@ -33,7 +33,11 @@ export {
   RestoreIdeaRequest,
 } from './requests/index.js'
 
-// Responses
+// Requests (Analysis)
+export { AnalyzeIdeaRequest } from './requests/index.js'
+export { SuggestActionRequest } from './requests/index.js'
+
+// Responses (Command)
 export type {
   AddIdeaResponse,
   AppendChunkResponse,
@@ -42,6 +46,10 @@ export type {
   ArchiveIdeaResponse,
   RestoreIdeaResponse,
 } from './responses/index.js'
+
+// Responses (Analysis)
+export type { AnalyzeIdeaResponse } from './responses/index.js'
+export type { SuggestActionResponse } from './responses/index.js'
 
 // Use Cases (Command)
 export {
@@ -52,6 +60,11 @@ export {
   ArchiveIdeaUseCase,
   RestoreIdeaUseCase,
 } from './use-cases/index.js'
+
+// Use Cases (Analysis)
+export { AnalyzeIdeaUseCase } from './use-cases/index.js'
+export { SuggestActionUseCase } from './use-cases/index.js'
+export type { SuggestActionResult } from './use-cases/index.js'
 
 // Query Request/Response
 export { ListIdeasRequest, ShowIdeaRequest } from './query/index.js'
@@ -69,3 +82,4 @@ export type { ListIdeasUseCaseOptions } from './usecases/index.js'
 export { IdeaCommandAPI } from './api/index.js'
 export { convertDomainErrorToAPIError } from './api/index.js'
 export { IdeaQueryAPI } from './api/index.js'
+export { IdeaAnalysisAPI } from './api/index.js'

@@ -25,6 +25,7 @@ export {
   NotFoundError,
   LLMServiceError,
   DatabaseError,
+  UnexpectedError,
 } from './errors/index.js'
 
 // Interfaces
