@@ -14,6 +14,7 @@ import {
   NotFoundError,
   LLMServiceError,
   DatabaseError,
+  UnexpectedError,
 } from '../../domain/index.js'
 
 export class IdeaAnalysisAPI {
@@ -100,6 +101,13 @@ export class IdeaAnalysisAPI {
       return createErrorResponse({
         code: 'DATABASE_ERROR',
         message: 'Database operation failed.',
+      })
+    }
+
+    if (error instanceof UnexpectedError) {
+      return createErrorResponse({
+        code: 'UNEXPECTED_ERROR',
+        message: 'An unexpected error occurred.',
       })
     }
 

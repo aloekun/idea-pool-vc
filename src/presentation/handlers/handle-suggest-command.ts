@@ -1,11 +1,14 @@
 import type { IdeaAnalysisAPI } from '../../application/api/idea-analysis-api.js'
 import { SuggestActionRequest } from '../../application/requests/suggest-action-request.js'
-import { ValidationError } from '../../domain/index.js'
+import type { Logger } from '../logger.js'
+import { consoleLogger } from '../logger.js'
+import { handleCommandError } from './handle-command-error.js'
 
 export async function handleSuggestCommand(
   api: IdeaAnalysisAPI,
   ideaId: string,
-  analysisId?: string
+  analysisId?: string,
+  logger: Logger = consoleLogger
 ): Promise<void> {
   try {
     const request = new SuggestActionRequest(ideaId, analysisId)
@@ -13,20 +16,16 @@ export async function handleSuggestCommand(
 
     if (response.success) {
       const { usedAnalysisId, suggestion, createdAt } = response.data
-      console.log('Suggestion generated successfully')
-      console.log(`Used analysis: ${usedAnalysisId}`)
-      console.log(`Created: ${createdAt}`)
-      console.log('')
-      console.log(`Suggestion: ${suggestion.content}`)
-      console.log(`Reasoning: ${suggestion.reasoning}`)
+      logger.log('Suggestion generated successfully')
+      logger.log(`Used analysis: ${usedAnalysisId}`)
+      logger.log(`Created: ${createdAt}`)
+      logger.log('')
+      logger.log(`Suggestion: ${suggestion.content}`)
+      logger.log(`Reasoning: ${suggestion.reasoning}`)
     } else {
-      console.error(`Error: ${response.error.message}`)
+      logger.error(`Error: ${response.error.message}`)
     }
   } catch (error) {
-    if (error instanceof ValidationError) {
-      console.error(`Error: ${error.message}`)
-    } else {
-      console.error('Error: An unexpected error occurred.')
-    }
+    handleCommandError(error, logger)
   }
 }

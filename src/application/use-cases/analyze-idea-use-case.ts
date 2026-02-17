@@ -1,15 +1,9 @@
 import type { IIdeaRepository } from '../../domain/interfaces/index.js'
 import type { ILLMService } from '../../domain/interfaces/index.js'
 import type { IdeaId } from '../../domain/index.js'
-import {
-  Analysis,
-  NotFoundError,
-  LLMServiceError,
-  DatabaseError,
-  DomainError,
-} from '../../domain/index.js'
+import { Analysis, NotFoundError, DomainError } from '../../domain/index.js'
 import type { Result } from '../../shared/index.js'
-import { success, failure } from '../../shared/index.js'
+import { success, failure, handleUseCaseError } from '../../shared/index.js'
 
 export class AnalyzeIdeaUseCase {
   constructor(
@@ -38,20 +32,7 @@ export class AnalyzeIdeaUseCase {
 
       return success(analysis)
     } catch (error) {
-      if (error instanceof LLMServiceError) {
-        return failure(error)
-      }
-      if (error instanceof DatabaseError) {
-        return failure(error)
-      }
-      if (error instanceof DomainError) {
-        return failure(error)
-      }
-      return failure(
-        new DatabaseError(
-          error instanceof Error ? error.message : 'Unexpected error occurred'
-        )
-      )
+      return handleUseCaseError(error)
     }
   }
 }

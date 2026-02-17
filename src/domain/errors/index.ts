@@ -4,4 +4,5 @@ export {
   NotFoundError,
   LLMServiceError,
   DatabaseError,
+  UnexpectedError,
 } from './domain-error.js'

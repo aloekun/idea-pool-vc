@@ -42,3 +42,11 @@ export class DatabaseError extends DomainError {
     super(message)
   }
 }
+
+export class UnexpectedError extends DomainError {
+  readonly code = 'UNEXPECTED_ERROR'
+
+  constructor(message: string) {
+    super(message)
+  }
+}

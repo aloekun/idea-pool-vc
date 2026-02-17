@@ -1,20 +1,26 @@
+import { z } from 'zod'
 import { ValidationError } from '../../domain/index.js'
+
+const SuggestActionRequestSchema = z.object({
+  ideaId: z.string().trim().min(1, 'ideaId is required'),
+  analysisId: z
+    .string()
+    .trim()
+    .min(1, 'analysisId cannot be empty when provided')
+    .optional(),
+})
 
 export class SuggestActionRequest {
   readonly ideaId: string
   readonly analysisId?: string
 
   constructor(ideaId: string, analysisId?: string) {
-    if (!ideaId || ideaId.trim() === '') {
-      throw new ValidationError('ideaId is required')
+    const result = SuggestActionRequestSchema.safeParse({ ideaId, analysisId })
+    if (!result.success) {
+      throw new ValidationError(result.error.issues[0].message)
     }
-
-    if (analysisId !== undefined && analysisId.trim() === '') {
-      throw new ValidationError('analysisId cannot be empty when provided')
-    }
-
-    this.ideaId = ideaId.trim()
-    this.analysisId = analysisId?.trim()
+    this.ideaId = result.data.ideaId
+    this.analysisId = result.data.analysisId
     Object.freeze(this)
   }
 }

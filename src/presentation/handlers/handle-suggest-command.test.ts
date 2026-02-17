@@ -1,17 +1,28 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { handleSuggestCommand } from './handle-suggest-command.js'
 import { IdeaAnalysisAPI } from '../../application/api/idea-analysis-api.js'
 import { AnalyzeIdeaUseCase } from '../../application/use-cases/analyze-idea-use-case.js'
 import { SuggestActionUseCase } from '../../application/use-cases/suggest-action-use-case.js'
 import { MockIdeaRepository, MockLLMService } from '../../infrastructure/testing/index.js'
 import { Idea, Analysis, Tag, TagCategory, Suggestion } from '../../domain/index.js'
+import type { Logger } from '../logger.js'
+
+function createTestLogger(): Logger & { output: string[]; errors: string[] } {
+  let output: string[] = []
+  let errors: string[] = []
+  return {
+    get output() { return output },
+    get errors() { return errors },
+    log: (message: string) => { output = [...output, message] },
+    error: (message: string) => { errors = [...errors, message] },
+  }
+}
 
 describe('handleSuggestCommand', () => {
   let repository: MockIdeaRepository
   let llmService: MockLLMService
   let api: IdeaAnalysisAPI
-  let consoleOutput: string[]
-  let consoleErrors: string[]
+  let logger: ReturnType<typeof createTestLogger>
 
   beforeEach(() => {
     repository = new MockIdeaRepository()
@@ -19,15 +30,11 @@ describe('handleSuggestCommand', () => {
     const analyzeUseCase = new AnalyzeIdeaUseCase(repository, llmService)
     const suggestUseCase = new SuggestActionUseCase(repository, llmService)
     api = new IdeaAnalysisAPI(analyzeUseCase, suggestUseCase)
+    logger = createTestLogger()
+  })
 
-    consoleOutput = []
-    consoleErrors = []
-    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
-      consoleOutput.push(args.join(' '))
-    })
-    vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
-      consoleErrors.push(args.join(' '))
-    })
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   function createIdeaWithAnalysis(): { idea: Idea; analysis: Analysis } {
@@ -52,27 +59,27 @@ describe('handleSuggestCommand', () => {
       const { idea } = createIdeaWithAnalysis()
       await repository.save(idea)
 
-      await handleSuggestCommand(api, idea.id.value)
+      await handleSuggestCommand(api, idea.id.value, undefined, logger)
 
-      const output = consoleOutput.join('\n')
+      const output = logger.output.join('\n')
       expect(output).toContain('Start with a minimal prototype')
       expect(output).toContain('quick validation')
-      expect(consoleErrors.length).toBe(0)
+      expect(logger.errors.length).toBe(0)
     })
 
     it('should display error for non-existent idea', async () => {
-      await handleSuggestCommand(api, '01ARZ3NDEKTSV4RRFFQ69G5FAV')
+      await handleSuggestCommand(api, '01ARZ3NDEKTSV4RRFFQ69G5FAV', undefined, logger)
 
-      expect(consoleErrors.length).toBeGreaterThan(0)
+      expect(logger.errors.length).toBeGreaterThan(0)
     })
 
     it('should display error when idea has no analyses', async () => {
       const idea = Idea.create('Idea without analysis')
       await repository.save(idea)
 
-      await handleSuggestCommand(api, idea.id.value)
+      await handleSuggestCommand(api, idea.id.value, undefined, logger)
 
-      expect(consoleErrors.length).toBeGreaterThan(0)
+      expect(logger.errors.length).toBeGreaterThan(0)
     })
 
     it('should display error when LLM service fails', async () => {
@@ -81,15 +88,15 @@ describe('handleSuggestCommand', () => {
       const { idea } = createIdeaWithAnalysis()
       await repository.save(idea)
 
-      await handleSuggestCommand(api, idea.id.value)
+      await handleSuggestCommand(api, idea.id.value, undefined, logger)
 
-      expect(consoleErrors.length).toBeGreaterThan(0)
+      expect(logger.errors.length).toBeGreaterThan(0)
     })
 
     it('should display error when ideaId is empty', async () => {
-      await handleSuggestCommand(api, '')
+      await handleSuggestCommand(api, '', undefined, logger)
 
-      expect(consoleErrors.length).toBeGreaterThan(0)
+      expect(logger.errors.length).toBeGreaterThan(0)
     })
   })
 
@@ -105,11 +112,11 @@ describe('handleSuggestCommand', () => {
       idea = idea.addAnalysis(analysis2)
       await repository.save(idea)
 
-      await handleSuggestCommand(api, idea.id.value, analysis1.id.value)
+      await handleSuggestCommand(api, idea.id.value, analysis1.id.value, logger)
 
-      const output = consoleOutput.join('\n')
+      const output = logger.output.join('\n')
       expect(output.length).toBeGreaterThan(0)
-      expect(consoleErrors.length).toBe(0)
+      expect(logger.errors.length).toBe(0)
     })
 
     it('should display error for non-existent analysisId', async () => {
@@ -119,10 +126,11 @@ describe('handleSuggestCommand', () => {
       await handleSuggestCommand(
         api,
         idea.id.value,
-        '01ARZ3NDEKTSV4RRFFQ69G5NONEXISTENT'
+        '01ARZ3NDEKTSV4RRFFQ69G5NONEXISTENT',
+        logger
       )
 
-      expect(consoleErrors.length).toBeGreaterThan(0)
+      expect(logger.errors.length).toBeGreaterThan(0)
     })
   })
 
@@ -131,9 +139,9 @@ describe('handleSuggestCommand', () => {
       const { idea, analysis } = createIdeaWithAnalysis()
       await repository.save(idea)
 
-      await handleSuggestCommand(api, idea.id.value)
+      await handleSuggestCommand(api, idea.id.value, undefined, logger)
 
-      const output = consoleOutput.join('\n')
+      const output = logger.output.join('\n')
       expect(output).toContain(analysis.id.value)
     })
 
@@ -147,9 +155,9 @@ describe('handleSuggestCommand', () => {
       const { idea } = createIdeaWithAnalysis()
       await repository.save(idea)
 
-      await handleSuggestCommand(api, idea.id.value)
+      await handleSuggestCommand(api, idea.id.value, undefined, logger)
 
-      const output = consoleOutput.join('\n')
+      const output = logger.output.join('\n')
       expect(output).toContain('Build a landing page first.')
       expect(output).toContain('Validates market interest')
     })
