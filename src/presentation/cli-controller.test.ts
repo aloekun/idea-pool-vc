@@ -27,8 +27,7 @@ function createController(
     new AddTagUseCase(repository),
     new RemoveTagUseCase(repository),
     new ArchiveIdeaUseCase(repository),
-    new RestoreIdeaUseCase(repository),
-    showIdeaUseCase
+    new RestoreIdeaUseCase(repository)
   )
   const queryAPI = new IdeaQueryAPI(
     new ListIdeasUseCase(repository),

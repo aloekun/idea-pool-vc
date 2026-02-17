@@ -224,39 +224,39 @@
 
 ### 統合テスト
 
-- [ ] 3.1 E2Eテスト: 基本フロー
+- [x] 3.1 E2Eテスト: 基本フロー
   - `idea add` → `idea list` → `idea show` の一連の流れ
   - `idea add` → `idea append` → `idea show` の追記フロー
 
-- [ ] 3.2 E2Eテスト: 分析フロー
+- [x] 3.2 E2Eテスト: 分析フロー
   - `idea add` → `idea analyze` → `idea suggest` の分析フロー
   - `idea add` → `idea analyze` → `idea suggest` (analysisId指定) の再現性テスト
 
-- [ ] 3.3 E2Eテスト: タグ管理フロー
+- [x] 3.3 E2Eテスト: タグ管理フロー
   - `idea add` → `idea tag add` → `idea show` → `idea tag remove` のタグ管理フロー
 
-- [ ] 3.4 E2Eテスト: アーカイブフロー
+- [x] 3.4 E2Eテスト: アーカイブフロー
   - `idea add` → `idea archive` → `idea list` (非表示確認) → `idea list --archived` (表示確認)
   - `idea restore` → `idea list` (復元確認)
 
-- [ ] 3.5 統合テストの実行と問題修正
+- [x] 3.5 統合テストの実行と問題修正
   - 全機能の統合動作確認
   - 発見された問題の修正
 
 ### ドキュメントとビルド
 
-- [ ] 3.6 READMEの作成
+- [x] 3.6 READMEの作成
   - インストール手順
   - 使用方法
   - コマンド一覧
   - 設定方法
 
-- [ ] 3.7 ビルドスクリプトの作成
+- [x] 3.7 ビルドスクリプトの作成
   - TypeScriptのビルド設定
   - 実行可能ファイルの生成
   - パッケージング
 
-- [ ] 3.8 CI/CDの設定
+- [x] 3.8 CI/CDの設定
   - テスト自動実行の設定
   - ビルド自動化の設定
 
