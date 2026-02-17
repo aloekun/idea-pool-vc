@@ -1,4 +1,5 @@
 import { IdeaId } from '../value-objects/index.js'
+import { ValidationError } from '../errors/index.js'
 import type { Chunk } from './chunk.js'
 import { Chunk as ChunkClass } from './chunk.js'
 import type { Tag } from './tag.js'
@@ -36,7 +37,7 @@ export class Idea {
 
   static create(content: string): Idea {
     if (!content || content.trim() === '') {
-      throw new Error('Idea content cannot be empty')
+      throw new ValidationError('Idea content cannot be empty')
     }
     return new Idea({
       id: IdeaId.generate(),

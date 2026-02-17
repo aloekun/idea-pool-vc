@@ -1,13 +1,9 @@
 import { z } from 'zod'
 import { ValidationError } from '../../domain/index.js'
 
-const SuggestActionRequestSchema = z.object({
-  ideaId: z.string().trim().min(1, 'ideaId is required'),
-  analysisId: z
-    .string()
-    .trim()
-    .min(1, 'analysisId cannot be empty when provided')
-    .optional(),
+const suggestActionSchema = z.object({
+  ideaId: z.string().trim().min(1, 'Idea ID is required'),
+  analysisId: z.string().trim().min(1, 'Analysis ID cannot be empty').optional(),
 })
 
 export class SuggestActionRequest {
@@ -15,7 +11,7 @@ export class SuggestActionRequest {
   readonly analysisId?: string
 
   constructor(ideaId: string, analysisId?: string) {
-    const result = SuggestActionRequestSchema.safeParse({ ideaId, analysisId })
+    const result = suggestActionSchema.safeParse({ ideaId, analysisId })
     if (!result.success) {
       throw new ValidationError(result.error.issues[0].message)
     }

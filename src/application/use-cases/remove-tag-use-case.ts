@@ -1,9 +1,7 @@
-import type { IIdeaRepository } from '../../domain/index.js'
+import type { IIdeaRepository } from '../../domain/interfaces/index.js'
 import { NotFoundError, DatabaseError } from '../../domain/index.js'
-import type { IdeaId } from '../../domain/index.js'
-import type { DomainError } from '../../domain/index.js'
-import type { Result } from '../../shared/index.js'
-import { success, failure } from '../../shared/index.js'
+import type { IdeaId, DomainError } from '../../domain/index.js'
+import { type Result, success, failure } from '../../shared/result.js'
 
 export class RemoveTagUseCase {
   constructor(private readonly repository: IIdeaRepository) {}
@@ -15,15 +13,14 @@ export class RemoveTagUseCase {
         return failure(new NotFoundError('Idea not found', ideaId.value))
       }
 
-      const tagToRemove = idea.tags.find((t) => t.name === tagName)
-      if (!tagToRemove) {
+      const existingTag = idea.tags.find((t) => t.name === tagName)
+      if (!existingTag) {
         return success(undefined)
       }
 
-      const updatedIdea = idea.removeTag(tagToRemove)
-      if (updatedIdea !== idea) {
-        await this.repository.update(updatedIdea)
-      }
+      const updated = idea.removeTag(existingTag)
+      await this.repository.update(updated)
+
       return success(undefined)
     } catch (error) {
       if (error instanceof DatabaseError) {

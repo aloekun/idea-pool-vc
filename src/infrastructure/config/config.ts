@@ -123,7 +123,7 @@ export function loadConfig(): AppConfig {
 
 export function getAbsoluteDatabasePath(config: AppConfig): string {
   const dbPath = config.database.path
-  if (path.isAbsolute(dbPath)) {
+  if (dbPath === ':memory:' || path.isAbsolute(dbPath)) {
     return dbPath
   }
   return path.join(process.cwd(), dbPath)

@@ -1,4 +1,5 @@
 import { ChunkId } from '../value-objects/index.js'
+import { ValidationError } from '../errors/index.js'
 
 export interface ChunkProps {
   id: ChunkId
@@ -20,7 +21,7 @@ export class Chunk {
 
   static create(content: string): Chunk {
     if (!content || content.trim() === '') {
-      throw new Error('Chunk content cannot be empty')
+      throw new ValidationError('Chunk content cannot be empty')
     }
     return new Chunk({
       id: ChunkId.generate(),

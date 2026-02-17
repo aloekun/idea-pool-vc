@@ -23,63 +23,49 @@ export {
   toIdeaDetail,
 } from './dto/index.js'
 
-// Requests (Command)
+// Use Cases
+export {
+  AddIdeaUseCase,
+  AppendChunkUseCase,
+  ListIdeasUseCase,
+  ShowIdeaUseCase,
+  AnalyzeIdeaUseCase,
+  SuggestActionUseCase,
+  AddTagUseCase,
+  RemoveTagUseCase,
+  ArchiveIdeaUseCase,
+  RestoreIdeaUseCase,
+} from './use-cases/index.js'
+export type { ListIdeasParams, SuggestActionResult } from './use-cases/index.js'
+
+// Requests
 export {
   AddIdeaRequest,
   AppendChunkRequest,
+  ListIdeasRequest,
+  ShowIdeaRequest,
+  AnalyzeIdeaRequest,
+  SuggestActionRequest,
   AddTagRequest,
   RemoveTagRequest,
   ArchiveIdeaRequest,
   RestoreIdeaRequest,
 } from './requests/index.js'
 
-// Requests (Analysis)
-export { AnalyzeIdeaRequest } from './requests/index.js'
-export { SuggestActionRequest } from './requests/index.js'
-
-// Responses (Command)
+// Responses
 export type {
   AddIdeaResponse,
   AppendChunkResponse,
+  ListIdeasResponse,
+  ShowIdeaResponse,
+  AnalyzeIdeaResponse,
+  SuggestActionResponse,
   AddTagResponse,
   RemoveTagResponse,
   ArchiveIdeaResponse,
   RestoreIdeaResponse,
 } from './responses/index.js'
 
-// Responses (Analysis)
-export type { AnalyzeIdeaResponse } from './responses/index.js'
-export type { SuggestActionResponse } from './responses/index.js'
-
-// Use Cases (Command)
-export {
-  AddIdeaUseCase,
-  AppendChunkUseCase,
-  AddTagUseCase,
-  RemoveTagUseCase,
-  ArchiveIdeaUseCase,
-  RestoreIdeaUseCase,
-} from './use-cases/index.js'
-
-// Use Cases (Analysis)
-export { AnalyzeIdeaUseCase } from './use-cases/index.js'
-export { SuggestActionUseCase } from './use-cases/index.js'
-export type { SuggestActionResult } from './use-cases/index.js'
-
-// Query Request/Response
-export { ListIdeasRequest, ShowIdeaRequest } from './query/index.js'
-export type {
-  ListIdeasRequestOptions,
-  ListIdeasResponse,
-  ShowIdeaResponse,
-} from './query/index.js'
-
-// Use Cases (Query)
-export { ListIdeasUseCase, ShowIdeaUseCase } from './usecases/index.js'
-export type { ListIdeasUseCaseOptions } from './usecases/index.js'
-
-// API
-export { IdeaCommandAPI } from './api/index.js'
+// API Facades
+export { IdeaCommandAPI, IdeaQueryAPI, IdeaAnalysisAPI } from './api/index.js'
 export { convertDomainErrorToAPIError } from './api/index.js'
-export { IdeaQueryAPI } from './api/index.js'
-export { IdeaAnalysisAPI } from './api/index.js'

@@ -1,24 +1,26 @@
+import type { APIResponse } from '../dto/index.js'
+import { createSuccessResponse, createErrorResponse, ERROR_CODES, toTagDTO } from '../dto/index.js'
+import type {
+  AddIdeaResponse,
+  AppendChunkResponse,
+  AddTagResponse,
+  RemoveTagResponse,
+  ArchiveIdeaResponse,
+  RestoreIdeaResponse,
+} from '../responses/index.js'
+import type { AddIdeaRequest } from '../requests/add-idea-request.js'
+import type { AppendChunkRequest } from '../requests/append-chunk-request.js'
+import type { AddTagRequest } from '../requests/add-tag-request.js'
+import type { RemoveTagRequest } from '../requests/remove-tag-request.js'
+import type { ArchiveIdeaRequest } from '../requests/archive-idea-request.js'
+import type { RestoreIdeaRequest } from '../requests/restore-idea-request.js'
 import type { AddIdeaUseCase } from '../use-cases/add-idea-use-case.js'
 import type { AppendChunkUseCase } from '../use-cases/append-chunk-use-case.js'
 import type { AddTagUseCase } from '../use-cases/add-tag-use-case.js'
 import type { RemoveTagUseCase } from '../use-cases/remove-tag-use-case.js'
 import type { ArchiveIdeaUseCase } from '../use-cases/archive-idea-use-case.js'
 import type { RestoreIdeaUseCase } from '../use-cases/restore-idea-use-case.js'
-import type { AddIdeaRequest } from '../requests/command-requests.js'
-import type { AppendChunkRequest } from '../requests/command-requests.js'
-import type { AddTagRequest } from '../requests/command-requests.js'
-import type { RemoveTagRequest } from '../requests/command-requests.js'
-import type { ArchiveIdeaRequest } from '../requests/command-requests.js'
-import type { RestoreIdeaRequest } from '../requests/command-requests.js'
-import type { AddIdeaResponse } from '../responses/command-responses.js'
-import type { AppendChunkResponse } from '../responses/command-responses.js'
-import type { AddTagResponse } from '../responses/command-responses.js'
-import type { RemoveTagResponse } from '../responses/command-responses.js'
-import type { ArchiveIdeaResponse } from '../responses/command-responses.js'
-import type { RestoreIdeaResponse } from '../responses/command-responses.js'
-import type { APIResponse } from '../dto/api-response.js'
-import { ERROR_CODES } from '../dto/api-response.js'
-import { DomainError, IdeaId, Tag, TagCategory } from '../../domain/index.js'
+import { IdeaId, Tag, TagCategory } from '../../domain/index.js'
 import { convertDomainErrorToAPIError } from './error-converter.js'
 
 export class IdeaCommandAPI {
@@ -34,17 +36,15 @@ export class IdeaCommandAPI {
   async addIdea(request: AddIdeaRequest): Promise<APIResponse<AddIdeaResponse>> {
     const result = await this.addIdeaUseCase.execute(request.content)
 
-    if (result.isSuccess) {
-      return {
-        success: true,
-        data: {
-          ideaId: result.value.value,
-          content: request.content,
-          createdAt: new Date().toISOString(),
-        },
-      }
+    if (result.isFailure) {
+      return convertDomainErrorToAPIError(result.error)
     }
-    return convertDomainErrorToAPIError(result.error)
+
+    return createSuccessResponse<AddIdeaResponse>({
+      ideaId: result.value.value,
+      content: request.content,
+      createdAt: new Date().toISOString(),
+    })
   }
 
   async appendChunk(request: AppendChunkRequest): Promise<APIResponse<AppendChunkResponse>> {
@@ -52,30 +52,23 @@ export class IdeaCommandAPI {
       const ideaId = IdeaId.fromString(request.ideaId)
       const result = await this.appendChunkUseCase.execute(ideaId, request.content)
 
-      if (result.isSuccess) {
-        const chunk = result.value
-        return {
-          success: true,
-          data: {
-            ideaId: request.ideaId,
-            chunkId: chunk.id.value,
-            content: chunk.content,
-            createdAt: chunk.createdAt.toISOString(),
-          },
-        }
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
       }
-      return convertDomainErrorToAPIError(result.error)
+
+      const chunk = result.value
+
+      return createSuccessResponse<AppendChunkResponse>({
+        ideaId: request.ideaId,
+        chunkId: chunk.id.value,
+        content: chunk.content,
+        createdAt: chunk.createdAt.toISOString(),
+      })
     } catch (error) {
-      if (error instanceof DomainError) {
-        return convertDomainErrorToAPIError(error)
-      }
-      return {
-        success: false,
-        error: {
-          code: ERROR_CODES.INTERNAL_ERROR,
-          message: 'An unexpected error occurred',
-        },
-      }
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
   }
 
@@ -84,32 +77,28 @@ export class IdeaCommandAPI {
       const ideaId = IdeaId.fromString(request.ideaId)
       const category = TagCategory.fromString(request.tagCategory)
       const tag = Tag.create(request.tagName, category)
+
       const result = await this.addTagUseCase.execute(ideaId, tag)
 
-      if (result.isSuccess) {
-        return {
-          success: true,
-          data: {
-            ideaId: request.ideaId,
-            tag: {
-              name: request.tagName,
-              category: request.tagCategory,
-            },
-          },
-        }
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
       }
-      return convertDomainErrorToAPIError(result.error)
+
+      return createSuccessResponse<AddTagResponse>({
+        ideaId: request.ideaId,
+        tag: toTagDTO(tag),
+      })
     } catch (error) {
-      if (error instanceof DomainError) {
-        return convertDomainErrorToAPIError(error)
+      if (error instanceof Error) {
+        return createErrorResponse({
+          code: ERROR_CODES.VALIDATION_ERROR,
+          message: error.message,
+        })
       }
-      return {
-        success: false,
-        error: {
-          code: ERROR_CODES.INTERNAL_ERROR,
-          message: 'An unexpected error occurred',
-        },
-      }
+      return createErrorResponse({
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'An unexpected error occurred',
+      })
     }
   }
 
@@ -118,27 +107,19 @@ export class IdeaCommandAPI {
       const ideaId = IdeaId.fromString(request.ideaId)
       const result = await this.removeTagUseCase.execute(ideaId, request.tagName)
 
-      if (result.isSuccess) {
-        return {
-          success: true,
-          data: {
-            ideaId: request.ideaId,
-            removedTagName: request.tagName,
-          },
-        }
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
       }
-      return convertDomainErrorToAPIError(result.error)
+
+      return createSuccessResponse<RemoveTagResponse>({
+        ideaId: request.ideaId,
+        removedTagName: request.tagName,
+      })
     } catch (error) {
-      if (error instanceof DomainError) {
-        return convertDomainErrorToAPIError(error)
-      }
-      return {
-        success: false,
-        error: {
-          code: ERROR_CODES.INTERNAL_ERROR,
-          message: 'An unexpected error occurred',
-        },
-      }
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
   }
 
@@ -147,27 +128,19 @@ export class IdeaCommandAPI {
       const ideaId = IdeaId.fromString(request.ideaId)
       const result = await this.archiveIdeaUseCase.execute(ideaId)
 
-      if (result.isSuccess) {
-        return {
-          success: true,
-          data: {
-            ideaId: request.ideaId,
-            archivedAt: new Date().toISOString(),
-          },
-        }
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
       }
-      return convertDomainErrorToAPIError(result.error)
+
+      return createSuccessResponse<ArchiveIdeaResponse>({
+        ideaId: request.ideaId,
+        archivedAt: new Date().toISOString(),
+      })
     } catch (error) {
-      if (error instanceof DomainError) {
-        return convertDomainErrorToAPIError(error)
-      }
-      return {
-        success: false,
-        error: {
-          code: ERROR_CODES.INTERNAL_ERROR,
-          message: 'An unexpected error occurred',
-        },
-      }
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
   }
 
@@ -176,26 +149,18 @@ export class IdeaCommandAPI {
       const ideaId = IdeaId.fromString(request.ideaId)
       const result = await this.restoreIdeaUseCase.execute(ideaId)
 
-      if (result.isSuccess) {
-        return {
-          success: true,
-          data: {
-            ideaId: request.ideaId,
-          },
-        }
+      if (result.isFailure) {
+        return convertDomainErrorToAPIError(result.error)
       }
-      return convertDomainErrorToAPIError(result.error)
+
+      return createSuccessResponse<RestoreIdeaResponse>({
+        ideaId: request.ideaId,
+      })
     } catch (error) {
-      if (error instanceof DomainError) {
-        return convertDomainErrorToAPIError(error)
-      }
-      return {
-        success: false,
-        error: {
-          code: ERROR_CODES.INTERNAL_ERROR,
-          message: 'An unexpected error occurred',
-        },
-      }
+      return createErrorResponse({
+        code: ERROR_CODES.VALIDATION_ERROR,
+        message: error instanceof Error ? error.message : 'Invalid idea ID',
+      })
     }
   }
 }

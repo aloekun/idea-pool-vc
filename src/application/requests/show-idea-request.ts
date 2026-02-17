@@ -1,15 +1,15 @@
 import { z } from 'zod'
 import { ValidationError } from '../../domain/index.js'
 
-const analyzeIdeaSchema = z.object({
+const showIdeaSchema = z.object({
   ideaId: z.string().trim().min(1, 'Idea ID is required'),
 })
 
-export class AnalyzeIdeaRequest {
+export class ShowIdeaRequest {
   readonly ideaId: string
 
   constructor(ideaId: string) {
-    const result = analyzeIdeaSchema.safeParse({ ideaId })
+    const result = showIdeaSchema.safeParse({ ideaId })
     if (!result.success) {
       throw new ValidationError(result.error.issues[0].message)
     }

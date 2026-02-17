@@ -26,23 +26,21 @@ export function convertDomainErrorToAPIError<T>(error: DomainError): APIResponse
   }
 
   if (error instanceof LLMServiceError) {
-    console.error('LLM service error:', error.message)
     return {
       success: false,
       error: {
         code: ERROR_CODES.LLM_SERVICE_ERROR,
-        message: 'LLM service unavailable',
+        message: error.message,
       },
     }
   }
 
   if (error instanceof DatabaseError) {
-    console.error('Database error:', error.message)
     return {
       success: false,
       error: {
         code: ERROR_CODES.DATABASE_ERROR,
-        message: 'Database error',
+        message: error.message,
       },
     }
   }
