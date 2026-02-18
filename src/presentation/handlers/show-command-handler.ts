@@ -38,7 +38,7 @@ export class ShowCommandHandler {
           this.write('')
           this.write(`Tags (${detail.tags.length}):`)
           for (const tag of detail.tags) {
-            this.write(`  ${tag.name} (${tag.category})`)
+            this.write(`  ${tag.name} [${tag.category}]`)
           }
         }
 
@@ -50,7 +50,7 @@ export class ShowCommandHandler {
             if (analysis.generatedTags.length > 0) {
               this.write(`    Generated tags:`)
               for (const tag of analysis.generatedTags) {
-                this.write(`      ${tag.name} (${tag.category})`)
+                this.write(`      ${tag.name} [${tag.category}]`)
               }
             }
             if (analysis.suggestion) {

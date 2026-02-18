@@ -7,6 +7,9 @@
   "bin": {
     "idea": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -16,6 +19,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "prepublishOnly": "pnpm check && pnpm build",
     "build:hooks-rs": "cd .claude/hooks-rs && cargo build --release && node -e \"const p=process.platform==='win32'?'.exe':'';require('fs').copyFileSync('target/release/validate-command'+p,'../validate-command'+p)\""
   },
   "keywords": [
