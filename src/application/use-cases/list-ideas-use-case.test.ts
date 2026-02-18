@@ -15,7 +15,7 @@ describe('ListIdeasUseCase', () => {
 
   describe('basic listing', () => {
     it('should return empty list when no ideas exist', async () => {
-      const result = await useCase.execute({})
+      const result = await useCase.execute()
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
@@ -27,7 +27,7 @@ describe('ListIdeasUseCase', () => {
       await repository.save(Idea.create('Idea 1'))
       await repository.save(Idea.create('Idea 2'))
 
-      const result = await useCase.execute({})
+      const result = await useCase.execute()
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
@@ -35,21 +35,34 @@ describe('ListIdeasUseCase', () => {
       }
     })
 
-    it('should return IdeaSummary objects', async () => {
+    it('should return Idea domain entities', async () => {
       const idea = Idea.create('Test idea with content')
       await repository.save(idea)
 
-      const result = await useCase.execute({})
+      const result = await useCase.execute()
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
-        const summary = result.value[0]
-        expect(summary.id).toBe(idea.id.value)
-        expect(summary.content).toBe('Test idea with content')
-        expect(summary.tagCount).toBe(0)
-        expect(summary.chunkCount).toBe(0)
-        expect(summary.hasAnalysis).toBe(false)
-        expect(summary.archivedAt).toBeNull()
+        const entity = result.value[0]
+        expect(entity.id.value).toBe(idea.id.value)
+        expect(entity.content).toBe('Test idea with content')
+        expect(entity.tags).toHaveLength(0)
+        expect(entity.chunks).toHaveLength(0)
+        expect(entity.analyses).toHaveLength(0)
+        expect(entity.archivedAt).toBeNull()
+      }
+    })
+
+    it('should return all ideas when no limit specified', async () => {
+      for (let i = 0; i < 15; i++) {
+        await repository.save(Idea.create(`Idea ${i}`))
+      }
+
+      const result = await useCase.execute()
+
+      expect(isSuccess(result)).toBe(true)
+      if (isSuccess(result)) {
+        expect(result.value).toHaveLength(15)
       }
     })
   })
@@ -79,7 +92,7 @@ describe('ListIdeasUseCase', () => {
       await repository.save(older)
       await repository.save(newer)
 
-      const result = await useCase.execute({})
+      const result = await useCase.execute()
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
@@ -100,19 +113,6 @@ describe('ListIdeasUseCase', () => {
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
         expect(result.value).toHaveLength(5)
-      }
-    })
-
-    it('should use default limit of 10 when not specified', async () => {
-      for (let i = 0; i < 15; i++) {
-        await repository.save(Idea.create(`Idea ${i}`))
-      }
-
-      const result = await useCase.execute({})
-
-      expect(isSuccess(result)).toBe(true)
-      if (isSuccess(result)) {
-        expect(result.value).toHaveLength(10)
       }
     })
 
@@ -189,7 +189,7 @@ describe('ListIdeasUseCase', () => {
       await repository.save(active)
       await repository.save(archived)
 
-      const result = await useCase.execute({})
+      const result = await useCase.execute()
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
@@ -211,7 +211,7 @@ describe('ListIdeasUseCase', () => {
       if (isSuccess(result)) {
         expect(result.value).toHaveLength(1)
         expect(result.value[0].content).toBe('Archived idea')
-        expect(result.value[0].archivedAt).not.toBeNull()
+        expect(result.value[0].archivedAt).toBeInstanceOf(Date)
       }
     })
 
@@ -227,32 +227,6 @@ describe('ListIdeasUseCase', () => {
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
         expect(result.value).toHaveLength(2)
-      }
-    })
-  })
-
-  describe('content truncation', () => {
-    it('should truncate content to 100 characters in summary', async () => {
-      const longContent = 'A'.repeat(200)
-      await repository.save(Idea.create(longContent))
-
-      const result = await useCase.execute({})
-
-      expect(isSuccess(result)).toBe(true)
-      if (isSuccess(result)) {
-        expect(result.value[0].content).toBe('A'.repeat(100) + '...')
-        expect(result.value[0].content.length).toBe(103)
-      }
-    })
-
-    it('should not truncate short content', async () => {
-      await repository.save(Idea.create('Short content'))
-
-      const result = await useCase.execute({})
-
-      expect(isSuccess(result)).toBe(true)
-      if (isSuccess(result)) {
-        expect(result.value[0].content).toBe('Short content')
       }
     })
   })

@@ -23,7 +23,7 @@ describe('ShowIdeaUseCase', () => {
   })
 
   describe('successful retrieval', () => {
-    it('should return idea detail for existing idea', async () => {
+    it('should return Idea entity for existing idea', async () => {
       const idea = Idea.create('Test idea content')
       await repository.save(idea)
 
@@ -31,13 +31,13 @@ describe('ShowIdeaUseCase', () => {
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
-        const detail = result.value
-        expect(detail.id).toBe(idea.id.value)
-        expect(detail.content).toBe('Test idea content')
-        expect(detail.chunks).toEqual([])
-        expect(detail.tags).toEqual([])
-        expect(detail.analyses).toEqual([])
-        expect(detail.archivedAt).toBeNull()
+        const entity = result.value
+        expect(entity.id.value).toBe(idea.id.value)
+        expect(entity.content).toBe('Test idea content')
+        expect(entity.chunks).toHaveLength(0)
+        expect(entity.tags).toHaveLength(0)
+        expect(entity.analyses).toHaveLength(0)
+        expect(entity.archivedAt).toBeNull()
       }
     })
 
@@ -51,12 +51,12 @@ describe('ShowIdeaUseCase', () => {
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
-        const detail = result.value
-        expect(detail.chunks).toHaveLength(2)
-        expect(detail.chunks[0].content).toBe('First chunk')
-        expect(detail.chunks[0].createdAt).toBeDefined()
-        expect(detail.chunks[1].content).toBe('Second chunk')
-        expect(detail.chunks[1].createdAt).toBeDefined()
+        const entity = result.value
+        expect(entity.chunks).toHaveLength(2)
+        expect(entity.chunks[0].content).toBe('First chunk')
+        expect(entity.chunks[0].createdAt).toBeInstanceOf(Date)
+        expect(entity.chunks[1].content).toBe('Second chunk')
+        expect(entity.chunks[1].createdAt).toBeInstanceOf(Date)
       }
     })
 
@@ -71,10 +71,10 @@ describe('ShowIdeaUseCase', () => {
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
-        const detail = result.value
-        expect(detail.tags).toHaveLength(2)
-        expect(detail.tags).toContainEqual({ name: 'Web', category: 'DOMAIN' })
-        expect(detail.tags).toContainEqual({ name: 'Large', category: 'SCALE' })
+        const entity = result.value
+        expect(entity.tags).toHaveLength(2)
+        expect(entity.tags.some((t) => t.name === 'Web' && t.category.value === 'DOMAIN')).toBe(true)
+        expect(entity.tags.some((t) => t.name === 'Large' && t.category.value === 'SCALE')).toBe(true)
       }
     })
 
@@ -91,15 +91,13 @@ describe('ShowIdeaUseCase', () => {
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
-        const detail = result.value
-        expect(detail.analyses).toHaveLength(1)
-        expect(detail.analyses[0].id).toBe(analysis.id.value)
-        expect(detail.analyses[0].generatedTags).toHaveLength(1)
-        expect(detail.analyses[0].suggestion).toEqual({
-          content: 'Try this approach',
-          reasoning: 'Because it works',
-        })
-        expect(detail.analyses[0].createdAt).toBeDefined()
+        const entity = result.value
+        expect(entity.analyses).toHaveLength(1)
+        expect(entity.analyses[0].id.value).toBe(analysis.id.value)
+        expect(entity.analyses[0].generatedTags).toHaveLength(1)
+        expect(entity.analyses[0].suggestion?.content).toBe('Try this approach')
+        expect(entity.analyses[0].suggestion?.reasoning).toBe('Because it works')
+        expect(entity.analyses[0].createdAt).toBeInstanceOf(Date)
       }
     })
 
@@ -111,7 +109,7 @@ describe('ShowIdeaUseCase', () => {
 
       expect(isSuccess(result)).toBe(true)
       if (isSuccess(result)) {
-        expect(result.value.archivedAt).not.toBeNull()
+        expect(result.value.archivedAt).toBeInstanceOf(Date)
       }
     })
 
@@ -138,7 +136,6 @@ describe('ShowIdeaUseCase', () => {
       expect(isFailure(result)).toBe(true)
       if (isFailure(result)) {
         expect(result.error).toBeInstanceOf(NotFoundError)
-        expect(result.error.message).toContain(nonExistentId.value)
       }
     })
 

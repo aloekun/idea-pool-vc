@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ListCommandHandler } from './list-command-handler.js'
 import { IdeaQueryAPI } from '../../application/api/idea-query-api.js'
-import { ListIdeasUseCase } from '../../application/usecases/list-ideas-use-case.js'
-import { ShowIdeaUseCase } from '../../application/usecases/show-idea-use-case.js'
+import { ListIdeasUseCase } from '../../application/use-cases/list-ideas-use-case.js'
+import { ShowIdeaUseCase } from '../../application/use-cases/show-idea-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/index.js'
 import { Idea, Tag, TagCategory } from '../../domain/index.js'
 

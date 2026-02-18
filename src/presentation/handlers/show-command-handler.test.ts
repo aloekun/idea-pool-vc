@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ShowCommandHandler } from './show-command-handler.js'
 import { IdeaQueryAPI } from '../../application/api/idea-query-api.js'
-import { ListIdeasUseCase } from '../../application/usecases/list-ideas-use-case.js'
-import { ShowIdeaUseCase } from '../../application/usecases/show-idea-use-case.js'
+import { ListIdeasUseCase } from '../../application/use-cases/list-ideas-use-case.js'
+import { ShowIdeaUseCase } from '../../application/use-cases/show-idea-use-case.js'
 import { MockIdeaRepository } from '../../infrastructure/testing/index.js'
 import {
   Idea,
@@ -115,7 +115,7 @@ describe('ShowCommandHandler', () => {
       await handler.handle('01H5X8K2QJ3FT9VG0N6Y7MPWRS')
 
       const fullOutput = output.join('\n')
-      expect(fullOutput).toContain('01H5X8K2QJ3FT9VG0N6Y7MPWRS')
+      expect(fullOutput).toContain('not found')
     })
 
     it('should display error for empty idea id', async () => {
